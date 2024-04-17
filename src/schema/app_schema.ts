@@ -3,147 +3,107 @@
  * Licensed under the MIT License.
  */
 
-import { TreeConfiguration, SchemaFactory, Tree, ValidateRecursiveSchema } from "fluid-framework";
-import { Guid } from "guid-typescript";
+import { TreeConfiguration, SchemaFactory, Tree } from "fluid-framework";
+import { v4 as uuid } from "uuid";
 
 // Schema is defined using a factory object that generates classes for objects as well
 // as list and map nodes.
 
 // Include a UUID to guarantee that this schema will be uniquely identifiable.
 // As this schema uses a recursive type, the beta SchemaFactoryRecursive is used instead of just SchemaFactory.
-const sf = new SchemaFactory("fc1db2e8-0a00-11ee-be56-0242ac120002");
+const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
 
-// Define the schema for the note object.
+// Define the schema for the session object.
 // Helper functions for working with the data contained in this object
 // are included in this class definition as methods.
-export class Note extends sf.object(
-	"Note",
-	// Fields for Notes which SharedTree will store and synchronize across clients.
-	// These fields are exposed as members of instances of the Note class.
+export class Session extends sf.object(
+	"Session",
+	// Fields for sessions which SharedTree will store and synchronize across clients.
+	// These fields are exposed as members of instances of the Session class.
 	{
-		/**
-		 * Id to make building the React app simpler.
-		 */
 		id: sf.string,
-		text: sf.string,
-		author: sf.string,
-		/**
-		 * Sequence of user ids to track which users have voted on this note.
-		 */
-		votes: sf.array(sf.string),
+		title: sf.string,
+		abstract: sf.string,
 		created: sf.number,
 		lastChanged: sf.number,
 	},
 ) {
-	// Update the note text and also update the timestamp in the note
-	public updateText(text: string) {
+	// Update the title text and also update the timestamp
+	public updateTitle(text: string) {
 		this.lastChanged = new Date().getTime();
-		this.text = text;
+		this.title = text;
 	}
 
-	public toggleVote(user: string) {
-		const index = this.votes.indexOf(user);
-		if (index > -1) {
-			this.votes.removeAt(index);
-		} else {
-			this.votes.insertAtEnd(user);
-		}
-
+	// Update the abstract text and also update the timestamp
+	public updateAbstract(text: string) {
 		this.lastChanged = new Date().getTime();
+		this.abstract = text;
 	}
 
 	/**
-	 * Removes a node from its parent {@link Items}.
-	 * If the note is not in an {@link Items}, it is left unchanged.
+	 * Removes a node from its parent.
 	 */
 	public delete() {
 		const parent = Tree.parent(this);
-		// Use type narrowing to ensure that parent is Items as expected for a note.
-		if (Tree.is(parent, Items)) {
+		// Use type narrowing to ensure that parent is correct.
+		if (Tree.is(parent, Sessions) || Tree.is(parent, Day)) {
 			const index = parent.indexOf(this);
 			parent.removeAt(index);
 		}
 	}
 }
 
-// Schema for a list of Notes and Groups.
-export class Items extends sf.arrayRecursive("Items", [() => Group, Note]) {
-	public addNode(author: string) {
-		const timeStamp = new Date().getTime();
+export class Placeholder extends sf.object("Placeholder", {
+	// Placeholder for an empty slot in a day
+}) {}
 
-		// Define the note to add to the SharedTree - this must conform to
-		// the schema definition of a note
-		const newNote = new Note({
-			id: Guid.create().toString(),
-			text: "",
-			author,
-			votes: [],
-			created: timeStamp,
-			lastChanged: timeStamp,
+export class Sessions extends sf.array("Sessions", Session) {
+	// Add a session to the conference
+	public addSession() {
+		const session = new Session({
+			id: uuid(),
+			title: "New Session",
+			abstract: "New Abstract",
+			created: new Date().getTime(),
+			lastChanged: new Date().getTime(),
 		});
-
-		// Insert the note into the SharedTree.
-		this.insertAtEnd(newNote);
-	}
-
-	/**
-	 * Add a new group (container for notes) to the SharedTree.
-	 */
-	public addGroup(name: string): Group {
-		const group = new Group({
-			id: Guid.create().toString(),
-			name,
-			items: new Items([]),
-		});
-
-		this.insertAtEnd(group);
-		return group;
+		this.insertAtEnd(session);
+		return session;
 	}
 }
 
-{
-	// Due to limitations of TypeScript, recursive schema may not produce type errors when declared incorrectly.
-	// Using ValidateRecursiveSchema helps ensure that mistakes made in the definition of a recursive schema (like `Items`)
-	// will introduce a compile error.
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	type _check = ValidateRecursiveSchema<typeof Items>;
-}
+export class Day extends sf.array("Day", [Placeholder, Session]) {}
 
-// Define the schema for the container of notes.
-export class Group extends sf.object("Group", {
-	id: sf.string,
-	name: sf.string,
-	items: Items,
-}) {
-	/**
-	 * Removes a group from its parent {@link Items}.
-	 * If the note is not in an {@link Items}, it is left unchanged.
-	 *
-	 * Before removing the group, its children are move to the parent.
-	 */
-	public delete() {
-		const parent = Tree.parent(this);
-		if (Tree.is(parent, Items)) {
-			// Test for the presence of notes and move them to the root
-			// in the same position as the group
-			// TODO: This check for `length !== 0` should be able to be removed once a bug in SharedTree is fixed.
-			if (this.items.length !== 0) {
-				const index = parent.indexOf(this);
-				parent.moveRangeToIndex(index, 0, this.items.length, this.items);
-			}
-
-			// Delete the now empty group
-			const i = parent.indexOf(this);
-			parent.removeAt(i);
+export class Days extends sf.map("Days", Day) {
+	// Add a day to the conference with a number as its key
+	public addDay(): Day {
+		let day: Day | undefined;
+		Tree.runTransaction<Days>(this, () => {
+			day = new Day([]);
+			this.set((this.size + 1).toString(), day);
+		});
+		if (day === undefined) {
+			throw new Error("Failed to add day");
 		}
+		return day;
+	}
+
+	getKeyFromValue(item: Day) {
+		return Tree.key(item);
 	}
 }
+
+export class Conference extends sf.object("Conference", {
+	name: sf.string,
+	sessions: Sessions,
+	days: Days,
+}) {}
 
 // Export the tree config appropriate for this schema.
 // This is passed into the SharedTree when it is initialized.
 export const appTreeConfiguration = new TreeConfiguration(
 	// Schema for the root
-	Items,
+	Conference,
 	// initial tree
-	() => new Items([]),
+	() => new Conference({ name: "Conference", sessions: [], days: new Map() }),
 );

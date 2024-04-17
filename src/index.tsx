@@ -11,8 +11,6 @@ import { notesContainerSchema } from "./infra/containerSchema.js";
 import { ReactApp } from "./react/ux.js";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
-import { initializeDevtools } from "@fluidframework/devtools/beta";
-import { devtoolsLogger } from "./infra/clientProps.js";
 import { appTreeConfiguration } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
@@ -35,17 +33,6 @@ async function start() {
 	// Initialize the SharedTree DDSes
 	const sessionTree = container.initialObjects.sessionData.schematize(sessionTreeConfiguration);
 	const appTree = container.initialObjects.appData.schematize(appTreeConfiguration);
-
-	// Initialize debugging tools
-	initializeDevtools({
-		logger: devtoolsLogger,
-		initialContainers: [
-			{
-				container,
-				containerKey: "main",
-			},
-		],
-	});
 
 	const undoRedo = createUndoRedoStacks(appTree.events);
 

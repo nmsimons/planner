@@ -4,28 +4,26 @@
  */
 
 import { Tree, TreeStatus } from "fluid-framework";
-import { Note, Group, Items } from "../schema/app_schema.js";
+import { Session, Sessions, Day, Conference } from "../schema/app_schema.js";
 
 // Move a note from one position in a sequence to another position in the same sequence or
 // in a different sequence. The index being passed here is the desired index after the move.
-export function moveItem(item: Note | Group, destinationIndex: number, destination: Items) {
+export function moveItem(session: Session, destinationIndex: number, destination: Day | Sessions) {
 	// need to test that the destination or the item being dragged hasn't been deleted
 	// because the move may have been initiated through a drag and drop which
 	// is asynchronous - the state may have changed during the drag but this function
 	// is operating based on the state at the moment the drag began
 	if (
 		Tree.status(destination) != TreeStatus.InDocument ||
-		Tree.status(item) != TreeStatus.InDocument
+		Tree.status(session) != TreeStatus.InDocument
 	)
 		return;
 
-	const source = Tree.parent(item);
+	const source = Tree.parent(session);
 
-	// Use Tree.is to narrow the type of source to the items schema
-	// If source uses the items schema, it can receive both a note
-	// and a group
-	if (Tree.is(source, Items)) {
-		const index = source.indexOf(item);
+	// Use Tree.is to narrow the type of source to the correct schema
+	if (Tree.is(source, Sessions) || Tree.is(source, Day)) {
+		const index = source.indexOf(session);
 		if (destinationIndex == Infinity) {
 			destination.moveToEnd(index, source);
 		} else {
@@ -34,14 +32,16 @@ export function moveItem(item: Note | Group, destinationIndex: number, destinati
 	}
 }
 
-export function findNote(items: Items, id: string): Note | undefined {
-	for (const i of items) {
-		if (Tree.is(i, Note)) {
-			if (i.id === id) return i;
-		} else {
-			const n = findNote(i.items, id);
-			if (n !== undefined) {
-				return n;
+export function findSession(conference: Conference, id: string): Session | undefined {
+	for (const s of conference.sessions) {
+		if (Tree.is(s, Session)) {
+			if (s.id === id) return s;
+		}
+	}
+	for (const day of conference.days) {
+		for (const s of day) {
+			if (Tree.is(s, Session)) {
+				if (s.id === id) return s;
 			}
 		}
 	}

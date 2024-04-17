@@ -4,34 +4,33 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { Note, Group, Items } from "../schema/app_schema.js";
-import { Session } from "../schema/session_schema.js";
+import { Conference } from "../schema/app_schema.js";
+import { ClientSession } from "../schema/session_schema.js";
 import {
 	ConnectionState,
 	IFluidContainer,
 	IMember,
 	IServiceAudience,
-	Revertible,
 	Tree,
 	TreeView,
 } from "fluid-framework";
-import { GroupView } from "./groupux.js";
-import { AddNoteButton, NoteView, RootNoteWrapper } from "./noteux.js";
+import { RootSessionWrapper } from "./session_ux.js";
 import {
 	Floater,
-	NewGroupButton,
-	NewNoteButton,
+	NewDayButton,
+	NewSessionButton,
 	DeleteNotesButton,
 	ButtonGroup,
 	UndoButton,
 	RedoButton,
-} from "./buttonux.js";
+} from "./button_ux.js";
 import { undefinedUserId } from "../utils/utils.js";
 import { undoRedo } from "../utils/undo.js";
+import { DayView } from "./day_ux.js";
 
 export function Canvas(props: {
-	items: TreeView<typeof Items>;
-	sessionTree: TreeView<typeof Session>;
+	conferenceTree: TreeView<typeof Conference>;
+	sessionTree: TreeView<typeof ClientSession>;
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
 	fluidMembers: string[];
@@ -49,7 +48,7 @@ export function Canvas(props: {
 	// For more complex apps, this code can be included
 	// on lower level components.
 	useEffect(() => {
-		const unsubscribe = Tree.on(props.items.root, "treeChanged", () => {
+		const unsubscribe = Tree.on(props.conferenceTree.root, "treeChanged", () => {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
@@ -99,24 +98,26 @@ export function Canvas(props: {
 
 	return (
 		<div className="relative flex grow-0 h-full w-full bg-transparent">
-			<ItemsView
-				items={props.items.root}
+			<ConferenceView
+				conference={props.conferenceTree.root}
 				clientId={props.currentUser}
-				session={props.sessionTree.root}
+				clientSession={props.sessionTree.root}
 				fluidMembers={props.fluidMembers}
-				isRoot={true}
 			/>
 			<Floater>
 				<ButtonGroup>
-					<NewGroupButton
-						items={props.items.root}
+					<NewDayButton
+						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
 						clientId={props.currentUser}
 					/>
-					<NewNoteButton items={props.items.root} clientId={props.currentUser} />
+					<NewSessionButton
+						conference={props.conferenceTree.root}
+						clientId={props.currentUser}
+					/>
 					<DeleteNotesButton
 						session={props.sessionTree.root}
-						items={props.items.root}
+						conference={props.conferenceTree.root}
 						clientId={props.currentUser}
 					/>
 				</ButtonGroup>
@@ -129,64 +130,43 @@ export function Canvas(props: {
 	);
 }
 
-export function ItemsView(props: {
-	items: Items;
+export function ConferenceView(props: {
+	conference: Conference;
 	clientId: string;
-	session: Session;
+	clientSession: ClientSession;
 	fluidMembers: string[];
-	isRoot: boolean;
 }): JSX.Element {
-	const pilesArray = [];
-	for (const i of props.items) {
-		if (Tree.is(i, Group)) {
-			pilesArray.push(
-				<GroupView
-					key={i.id}
-					group={i}
-					clientId={props.clientId}
-					parent={props.items}
-					session={props.session}
-					fluidMembers={props.fluidMembers}
-				/>,
-			);
-		} else if (Tree.is(i, Note)) {
-			if (props.isRoot) {
-				pilesArray.push(
-					<RootNoteWrapper
-						key={i.id}
-						note={i}
-						clientId={props.clientId}
-						parent={props.items}
-						session={props.session}
-						fluidMembers={props.fluidMembers}
-					/>,
-				);
-			} else {
-				pilesArray.push(
-					<NoteView
-						key={i.id}
-						note={i}
-						clientId={props.clientId}
-						parent={props.items}
-						session={props.session}
-						fluidMembers={props.fluidMembers}
-					/>,
-				);
-			}
-		}
+	const sessionArray = [];
+	for (const i of props.conference.sessions) {
+		sessionArray.push(
+			<RootSessionWrapper
+				key={i.id}
+				session={i}
+				clientId={props.clientId}
+				clientSession={props.clientSession}
+				fluidMembers={props.fluidMembers}
+			/>,
+		);
 	}
 
-	if (props.isRoot) {
-		return (
-			<div className="flex grow-0 flex-row h-full w-full flex-wrap gap-4 p-4 content-start overflow-y-scroll">
-				{pilesArray}
-				<div className="flex w-full h-24"></div>
-			</div>
+	const dayArray = [];
+	for (const day of props.conference.days) {
+		dayArray.push(
+			<DayView
+				key={day[0]}
+				day={day[1]}
+				clientSession={props.clientSession}
+				clientId={props.clientId}
+				fluidMembers={props.fluidMembers}
+			/>,
 		);
-	} else {
-		pilesArray.push(
-			<AddNoteButton key="newNote" parent={props.items} clientId={props.clientId} />,
-		);
-		return <div className="flex flex-row flex-wrap gap-8 p-2">{pilesArray}</div>;
 	}
+
+	return (
+		<div className="flex grow-0 flex-row h-full w-full flex-wrap gap-4 p-4 content-start overflow-y-scroll">
+			<div>{sessionArray}</div>
+			<div>{dayArray}</div>
+			<div className="flex w-full h-24"></div>
+		</div>
+	);
 }

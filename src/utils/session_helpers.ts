@@ -3,13 +3,13 @@
  * Licensed under the MIT License.
  */
 
-import { Note } from "../schema/app_schema.js";
-import { Session, Client } from "../schema/session_schema.js";
+import { Session } from "../schema/app_schema.js";
+import { ClientSession, Client } from "../schema/session_schema.js";
 import { selectAction, undefinedUserId } from "./utils.js";
 
 export const testRemoteNoteSelection = (
-	item: Note,
-	session: Session,
+	item: Session,
+	session: ClientSession,
 	clientId: string,
 	setRemoteSelected: (value: boolean) => void,
 	setSelected: (value: boolean) => void,
@@ -38,9 +38,9 @@ export const testRemoteNoteSelection = (
 };
 
 export const updateRemoteNoteSelection = (
-	item: Note,
+	item: Session,
 	action: selectAction,
-	session: Session,
+	session: ClientSession,
 	clientId: string,
 ) => {
 	if (clientId == undefinedUserId) return;
@@ -86,8 +86,8 @@ export const updateRemoteNoteSelection = (
 	session.clients.insertAtEnd(s);
 };
 
-export const getSelectedNotes = (session: Session, clientId: string): string[] => {
-	for (const c of session.clients) {
+export const getSelectedSessions = (clientSession: ClientSession, clientId: string): string[] => {
+	for (const c of clientSession.clients) {
 		if (c.clientId == clientId) {
 			return c.selected.concat();
 		}
@@ -95,7 +95,7 @@ export const getSelectedNotes = (session: Session, clientId: string): string[] =
 	return [];
 };
 
-export const cleanSessionData = (session: Session, fluidMembers: string[]) => {
+export const cleanSessionData = (session: ClientSession, fluidMembers: string[]) => {
 	const deleteMe: Client[] = [];
 	for (const c of session.clients) {
 		if (!fluidMembers.includes(c.clientId)) {
