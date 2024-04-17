@@ -52,11 +52,6 @@ export class Session extends sf.object(
 		}
 	}
 }
-
-export class Placeholder extends sf.object("Placeholder", {
-	// Placeholder for an empty slot in a day
-}) {}
-
 export class Sessions extends sf.array("Sessions", Session) {
 	// Add a session to the conference
 	public addSession() {
@@ -72,7 +67,7 @@ export class Sessions extends sf.array("Sessions", Session) {
 	}
 }
 
-export class Day extends sf.array("Day", [Placeholder, Session]) {}
+export class Day extends sf.array("Day", Session) {}
 
 export class Days extends sf.map("Days", Day) {
 	// Add a day to the conference with a number as its key

@@ -34,15 +34,11 @@ export function moveItem(session: Session, destinationIndex: number, destination
 
 export function findSession(conference: Conference, id: string): Session | undefined {
 	for (const s of conference.sessions) {
-		if (Tree.is(s, Session)) {
-			if (s.id === id) return s;
-		}
+		if (s.id === id) return s;
 	}
 	for (const day of conference.days) {
-		for (const s of day) {
-			if (Tree.is(s, Session)) {
-				if (s.id === id) return s;
-			}
+		for (const s of day[1]) {
+			if (s.id === id) return s;
 		}
 	}
 	return undefined;

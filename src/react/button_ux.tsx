@@ -4,8 +4,8 @@
  */
 
 import React from "react";
-import { Conference, Days, Session } from "../schema/app_schema.js";
-import { moveItem, findSession } from "../utils/app_helpers.js";
+import { Conference, Days } from "../schema/app_schema.js";
+import { findSession } from "../utils/app_helpers.js";
 import {
 	ThumbLikeFilled,
 	DismissFilled,
@@ -55,7 +55,7 @@ export function NewSessionButton(props: { conference: Conference; clientId: stri
 			handleClick={(e: React.MouseEvent) => handleClick(e)}
 			icon={<NoteRegular />}
 		>
-			Add Note
+			New Session
 		</IconButton>
 	);
 }
@@ -84,7 +84,7 @@ export function DeleteNotesButton(props: {
 			handleClick={() => handleClick()}
 			icon={<DeleteRegular />}
 		>
-			Delete Note
+			Delete Session
 		</IconButton>
 	);
 }

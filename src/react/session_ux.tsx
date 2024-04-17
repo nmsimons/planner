@@ -184,16 +184,16 @@ export function SessionView(props: {
 						(isOver && canDrop ? "translate-x-3" : "")
 					}
 				>
-					<NoteToolbar session={props.session} />
-					<SessionAbstract session={props.session} update={update} />
-					<NoteSelection show={remoteSelected} />
+					<SessionToolbar session={props.session} />
+					<SessionTitle session={props.session} update={update} />
+					<SessionSelection show={remoteSelected} />
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function NoteSelection(props: { show: boolean }): JSX.Element {
+function SessionSelection(props: { show: boolean }): JSX.Element {
 	if (props.show) {
 		return (
 			<div className="absolute -top-2 -left-2 h-52 w-52 rounded border-dashed border-indigo-800 border-4" />
@@ -203,7 +203,7 @@ function NoteSelection(props: { show: boolean }): JSX.Element {
 	}
 }
 
-function SessionAbstract(props: {
+function SessionTitle(props: {
 	session: Session;
 	update: (value: selectAction) => void;
 }): JSX.Element {
@@ -224,14 +224,14 @@ function SessionAbstract(props: {
 	return (
 		<textarea
 			className="p-2 bg-transparent h-full w-full resize-none z-50"
-			value={props.session.abstract}
+			value={props.session.title}
 			onClick={(e) => handleClick(e)}
-			onChange={(e) => props.session.updateAbstract(e.target.value)}
+			onChange={(e) => props.session.updateTitle(e.target.value)}
 		/>
 	);
 }
 
-function NoteToolbar(props: { session: Session }): JSX.Element {
+function SessionToolbar(props: { session: Session }): JSX.Element {
 	return (
 		<div className="flex justify-between z-50">
 			<DeleteSessionButton session={props.session} />
