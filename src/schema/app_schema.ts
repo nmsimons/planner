@@ -10,7 +10,6 @@ import { v4 as uuid } from "uuid";
 // as list and map nodes.
 
 // Include a UUID to guarantee that this schema will be uniquely identifiable.
-// As this schema uses a recursive type, the beta SchemaFactoryRecursive is used instead of just SchemaFactory.
 const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
 
 // Define the schema for the session object.
@@ -46,12 +45,13 @@ export class Session extends sf.object(
 	public delete() {
 		const parent = Tree.parent(this);
 		// Use type narrowing to ensure that parent is correct.
-		if (Tree.is(parent, Sessions) || Tree.is(parent, Day)) {
+		if (Tree.is(parent, Sessions)) {
 			const index = parent.indexOf(this);
 			parent.removeAt(index);
 		}
 	}
 }
+
 export class Sessions extends sf.array("Sessions", Session) {
 	// Add a session to the conference
 	public addSession() {
@@ -67,14 +67,12 @@ export class Sessions extends sf.array("Sessions", Session) {
 	}
 }
 
-export class Day extends sf.array("Day", Session) {}
-
-export class Days extends sf.map("Days", Day) {
+export class Days extends sf.map("Days", Sessions) {
 	// Add a day to the conference with a number as its key
-	public addDay(): Day {
-		let day: Day | undefined;
+	public addDay(): Sessions {
+		let day: Sessions | undefined;
 		Tree.runTransaction<Days>(this, () => {
-			day = new Day([]);
+			day = new Sessions([]);
 			this.set((this.size + 1).toString(), day);
 		});
 		if (day === undefined) {
@@ -83,7 +81,36 @@ export class Days extends sf.map("Days", Day) {
 		return day;
 	}
 
-	getKeyFromValue(item: Day) {
+	// Remove the last day from the conference
+	public removeDay() {
+		// Get the conference object from the parent of this map
+		const conference = Tree.parent(this);
+		// Get the sessions array from the conference object
+		// and move all the sessions in the Day to the sessions array
+		if (Tree.is(conference, Conference)) {
+			const sessions = conference?.sessions;
+			const lastKey = Array.from(this.keys()).pop();
+			if (lastKey) {
+				Tree.runTransaction<Days>(this, () => {
+					// Get the Day from the map
+					const day = this.get(lastKey);
+					// Convince TypeScript that day is not undefined
+					if (day === undefined) {
+						return;
+					}
+					// Move all the sessions in the Day to the sessions array
+					if (day.length !== 0) {
+						const index = sessions.length;
+						sessions.moveRangeToIndex(index, 0, day.length, day);
+					}
+					// Remove the day from the conference
+					this.delete(lastKey);
+				});
+			}
+		}
+	}
+
+	getKeyFromValue(item: Sessions) {
 		return Tree.key(item);
 	}
 }

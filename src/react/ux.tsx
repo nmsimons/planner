@@ -12,6 +12,7 @@ import { IFluidContainer, IMember, IServiceAudience, TreeView } from "fluid-fram
 import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
 import { undefinedUserId } from "../utils/utils.js";
+import Prompt from "./prompt_ux.js";
 
 export function ReactApp(props: {
 	items: TreeView<typeof Conference>;
@@ -19,11 +20,13 @@ export function ReactApp(props: {
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
 	undoRedo: undoRedo;
+	insertTemplate: (prompt: string) => Promise<void>;
 }): JSX.Element {
 	const [currentUser, setCurrentUser] = useState(undefinedUserId);
 	const [connectionState, setConnectionState] = useState("");
 	const [saved, setSaved] = useState(false);
 	const [fluidMembers, setFluidMembers] = useState<string[]>([]);
+	const [isPromptOpen, setIsPromptOpen] = useState(false);
 
 	/** Unsubscribe to undo-redo events when the component unmounts */
 	useEffect(() => {
@@ -31,32 +34,40 @@ export function ReactApp(props: {
 	}, []);
 
 	return (
-		<div
-			id="main"
-			className="flex flex-col bg-transparent h-screen w-full overflow-hidden overscroll-none"
-		>
-			<Header
-				saved={saved}
-				connectionState={connectionState}
-				fluidMembers={fluidMembers}
-				clientId={currentUser}
-			/>
-			<div className="flex h-[calc(100vh-48px)] flex-row ">
-				<Canvas
-					conferenceTree={props.items}
-					sessionTree={props.sessionTree}
-					audience={props.audience}
-					container={props.container}
+		<>
+			<div
+				id="main"
+				className="flex flex-col bg-transparent h-screen w-full overflow-hidden overscroll-none"
+			>
+				<Header
+					saved={saved}
+					connectionState={connectionState}
 					fluidMembers={fluidMembers}
-					currentUser={currentUser}
-					undoRedo={props.undoRedo}
-					setCurrentUser={setCurrentUser}
-					setConnectionState={setConnectionState}
-					setSaved={setSaved}
-					setFluidMembers={setFluidMembers}
+					clientId={currentUser}
 				/>
+				<div className="flex h-[calc(100vh-48px)] flex-row ">
+					<Canvas
+						conferenceTree={props.items}
+						sessionTree={props.sessionTree}
+						audience={props.audience}
+						container={props.container}
+						fluidMembers={fluidMembers}
+						currentUser={currentUser}
+						undoRedo={props.undoRedo}
+						setCurrentUser={setCurrentUser}
+						setConnectionState={setConnectionState}
+						setSaved={setSaved}
+						setFluidMembers={setFluidMembers}
+						setShowPrompt={setIsPromptOpen}
+					/>
+				</div>
 			</div>
-		</div>
+			<Prompt
+				insertTemplate={props.insertTemplate}
+				isOpen={isPromptOpen}
+				setIsOpen={setIsPromptOpen}
+			/>
+		</>
 	);
 }
 

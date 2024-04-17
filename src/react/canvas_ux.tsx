@@ -19,14 +19,16 @@ import {
 	Floater,
 	NewDayButton,
 	NewSessionButton,
-	DeleteNotesButton,
+	DeleteSessionsButton,
 	ButtonGroup,
 	UndoButton,
 	RedoButton,
+	DeleteDayButton,
+	ShowPromptButton,
 } from "./button_ux.js";
 import { undefinedUserId } from "../utils/utils.js";
 import { undoRedo } from "../utils/undo.js";
-import { DayView } from "./day_ux.js";
+import { SessionsView } from "./sessions_ux.js";
 
 export function Canvas(props: {
 	conferenceTree: TreeView<typeof Conference>;
@@ -40,6 +42,7 @@ export function Canvas(props: {
 	setConnectionState: (arg: string) => void;
 	setSaved: (arg: boolean) => void;
 	setFluidMembers: (arg: string[]) => void;
+	setShowPrompt: (arg: boolean) => void;
 }): JSX.Element {
 	const [invalidations, setInvalidations] = useState(0);
 
@@ -106,20 +109,26 @@ export function Canvas(props: {
 			/>
 			<Floater>
 				<ButtonGroup>
+					<NewSessionButton
+						conference={props.conferenceTree.root}
+						clientId={props.currentUser}
+					/>
+					<DeleteSessionsButton
+						session={props.sessionTree.root}
+						conference={props.conferenceTree.root}
+						clientId={props.currentUser}
+					/>
 					<NewDayButton
 						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
 						clientId={props.currentUser}
 					/>
-					<NewSessionButton
-						conference={props.conferenceTree.root}
-						clientId={props.currentUser}
-					/>
-					<DeleteNotesButton
+					<DeleteDayButton
+						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
-						conference={props.conferenceTree.root}
 						clientId={props.currentUser}
 					/>
+					<ShowPromptButton show={props.setShowPrompt} />
 				</ButtonGroup>
 				<ButtonGroup>
 					<UndoButton undo={() => props.undoRedo.undo()} />
@@ -149,24 +158,35 @@ export function ConferenceView(props: {
 		);
 	}
 
+	return (
+		<div className="flex grow-0 flex-row h-full w-full flex-nowrap gap-4 p-4 content-start overflow-y-scroll">
+			<SessionsView sessions={props.conference.sessions} title="Unscheduled" {...props} />
+			<DaysView {...props} />
+			<div className="flex w-full h-24"></div>
+		</div>
+	);
+}
+
+// React component that renders each day in the conference side by side
+export function DaysView(props: {
+	conference: Conference;
+	clientId: string;
+	clientSession: ClientSession;
+	fluidMembers: string[];
+}): JSX.Element {
 	const dayArray = [];
 	for (const day of props.conference.days) {
 		dayArray.push(
-			<DayView
+			<SessionsView
 				key={day[0]}
-				day={day[1]}
+				sessions={day[1]}
 				clientSession={props.clientSession}
 				clientId={props.clientId}
 				fluidMembers={props.fluidMembers}
+				title={day[0]}
 			/>,
 		);
 	}
 
-	return (
-		<div className="flex grow-0 flex-row h-full w-full flex-wrap gap-4 p-4 content-start overflow-y-scroll">
-			<div>{sessionArray}</div>
-			<div>{dayArray}</div>
-			<div className="flex w-full h-24"></div>
-		</div>
-	);
+	return <>{dayArray}</>;
 }

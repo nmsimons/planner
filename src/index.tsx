@@ -47,6 +47,7 @@ async function start() {
 				audience={services.audience}
 				container={container}
 				undoRedo={undoRedo}
+				insertTemplate={async (prompt: string) => {}} // eslint-disable-line @typescript-eslint/no-empty-function
 			/>
 		</DndProvider>,
 	);

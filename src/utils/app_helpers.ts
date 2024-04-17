@@ -4,11 +4,11 @@
  */
 
 import { Tree, TreeStatus } from "fluid-framework";
-import { Session, Sessions, Day, Conference } from "../schema/app_schema.js";
+import { Session, Sessions, Conference } from "../schema/app_schema.js";
 
 // Move a note from one position in a sequence to another position in the same sequence or
 // in a different sequence. The index being passed here is the desired index after the move.
-export function moveItem(session: Session, destinationIndex: number, destination: Day | Sessions) {
+export function moveItem(session: Session, destinationIndex: number, destination: Sessions) {
 	// need to test that the destination or the item being dragged hasn't been deleted
 	// because the move may have been initiated through a drag and drop which
 	// is asynchronous - the state may have changed during the drag but this function
@@ -22,7 +22,7 @@ export function moveItem(session: Session, destinationIndex: number, destination
 	const source = Tree.parent(session);
 
 	// Use Tree.is to narrow the type of source to the correct schema
-	if (Tree.is(source, Sessions) || Tree.is(source, Day)) {
+	if (Tree.is(source, Sessions)) {
 		const index = source.indexOf(session);
 		if (destinationIndex == Infinity) {
 			destination.moveToEnd(index, source);

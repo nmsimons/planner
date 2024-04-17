@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Session, Day, Days } from "../schema/app_schema.js";
+import { Conference, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
@@ -12,11 +12,12 @@ import { ClientSession } from "../schema/session_schema.js";
 import { Tree } from "fluid-framework";
 import { SessionView } from "./session_ux.js";
 
-export function DayView(props: {
-	day: Day;
+export function SessionsView(props: {
+	sessions: Sessions;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: string[];
+	title: string;
 }): JSX.Element {
 	const [{ isOver, canDrop }, drop] = useDrop(() => ({
 		accept: [dragType.SESSION],
@@ -41,7 +42,7 @@ export function DayView(props: {
 
 			const droppedItem = item;
 			if (Tree.is(droppedItem, Session)) {
-				moveItem(droppedItem, props.day.length, props.day);
+				moveItem(droppedItem, props.sessions.length, props.sessions);
 			}
 
 			return;
@@ -56,70 +57,57 @@ export function DayView(props: {
 		e.stopPropagation();
 	};
 
+	let backgroundColor = "bg-green-200";
+	const parent = Tree.parent(props.sessions);
+	if (Tree.is(parent, Conference)) {
+		backgroundColor = "bg-blue-200";
+	}
+
 	return (
 		<div
 			onClick={(e) => handleClick(e)}
 			ref={attachRef}
 			className={
-				"transition-all border-l-4 border-dashed " +
+				"transition-all border-4 border-dashed h-fit " +
 				(isOver && canDrop ? "border-gray-500" : "border-transparent")
 			}
 		>
-			<div
-				className={
-					"p-2 bg-gray-200 min-h-64 transition-all " +
-					(isOver && canDrop ? "translate-x-3" : "")
-				}
-			>
-				<DayToolbar day={props.day} />
-				<DayViewContent {...props} />
+			<div className={backgroundColor + " p-2 h-fit min-h-96 min-w-72 transition-all "}>
+				<SessionsToolbar title={props.title} />
+				<SessionsViewContent {...props} />
 			</div>
 		</div>
 	);
 }
 
-function DayName(props: { day: Day }): JSX.Element {
-	const parent = Tree.parent(props.day);
-
-	if (Tree.is(parent, Days)) {
-		return (
-			<div className="flex w-0 grow p-1 mb-2 mr-2 text-lg font-bold text-black bg-transparent">
-				{parent.getKeyFromValue(props.day)}
-			</div>
-		);
-	}
-
-	return <></>;
-}
-
-function DayToolbar(props: { day: Day }): JSX.Element {
+function SessionsToolbar(props: { title: string }): JSX.Element {
 	return (
 		<div className="flex flex-row justify-between">
-			<DayName day={props.day} />
+			<div className="flex w-0 grow p-1 mb-2 mr-2 text-lg font-bold text-black bg-transparent">
+				{props.title}
+			</div>
 		</div>
 	);
 }
 
-function DayViewContent(props: {
-	day: Day;
+function SessionsViewContent(props: {
+	sessions: Sessions;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: string[];
 }): JSX.Element {
 	const sessionsArray = [];
-	for (const i of props.day) {
-		if (Tree.is(i, Session)) {
-			sessionsArray.push(
-				<SessionView
-					key={i.id}
-					session={i}
-					clientId={props.clientId}
-					clientSession={props.clientSession}
-					fluidMembers={props.fluidMembers}
-				/>,
-			);
-		}
+	for (const s of props.sessions) {
+		sessionsArray.push(
+			<SessionView
+				key={s.id}
+				session={s}
+				clientId={props.clientId}
+				clientSession={props.clientSession}
+				fluidMembers={props.fluidMembers}
+			/>,
+		);
 	}
 
-	return <div className="flex flex-row flex-wrap gap-4 p-4 content-start">{sessionsArray}</div>;
+	return <div className="flex flex-col gap-4 p-4 content-start">{sessionsArray}</div>;
 }

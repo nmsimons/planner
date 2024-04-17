@@ -11,9 +11,11 @@ import {
 	DismissFilled,
 	NoteRegular,
 	DeleteRegular,
-	RectangleLandscapeRegular,
 	ArrowUndoFilled,
 	ArrowRedoFilled,
+	StarFilled,
+	CalendarAddFilled,
+	CalendarCancelFilled,
 } from "@fluentui/react-icons";
 import { ClientSession } from "../schema/session_schema.js";
 import { getSelectedSessions } from "../utils/session_helpers.js";
@@ -26,18 +28,37 @@ export function NewDayButton(props: {
 }): JSX.Element {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		Tree.runTransaction(props.days, () => {
-			props.days.addDay();
-		});
+		props.days.addDay();
 	};
 	return (
 		<IconButton
 			color="white"
 			background="black"
 			handleClick={(e: React.MouseEvent) => handleClick(e)}
-			icon={<RectangleLandscapeRegular />}
+			icon={<CalendarAddFilled />}
 		>
 			Add Day
+		</IconButton>
+	);
+}
+
+export function DeleteDayButton(props: {
+	days: Days;
+	session: ClientSession;
+	clientId: string;
+}): JSX.Element {
+	const handleClick = (e: React.MouseEvent) => {
+		e.stopPropagation();
+		props.days.removeDay();
+	};
+	return (
+		<IconButton
+			color="white"
+			background="black"
+			handleClick={(e: React.MouseEvent) => handleClick(e)}
+			icon={<CalendarCancelFilled />}
+		>
+			Remove Day
 		</IconButton>
 	);
 }
@@ -60,13 +81,13 @@ export function NewSessionButton(props: { conference: Conference; clientId: stri
 	);
 }
 
-export function DeleteNotesButton(props: {
+export function DeleteSessionsButton(props: {
 	session: ClientSession;
 	conference: Conference;
 	clientId: string;
 }): JSX.Element {
 	const handleClick = () => {
-		// Wrap the delete operation in a transaction as it potentially modifies multiple notes
+		// Wrap the delete operation in a transaction as it potentially modifies multiple nodes
 		// and we want to ensure that the operation is atomic. This ensures that the revertible of
 		// the operation will undo all the changes made by the operation.
 		Tree.runTransaction(props.conference, () => {
@@ -134,6 +155,19 @@ export function DeleteButton(props: {
 	);
 }
 
+export function ShowPromptButton(props: { show: (arg: boolean) => void }): JSX.Element {
+	return (
+		<IconButton
+			color="white"
+			background="black"
+			handleClick={() => props.show(true)}
+			icon={<StarFilled />}
+		>
+			Get Started...
+		</IconButton>
+	);
+}
+
 export function IconButton(props: {
 	handleClick: (value: React.MouseEvent) => void;
 	children?: React.ReactNode;
@@ -189,8 +223,8 @@ export function ButtonGroup(props: { children: React.ReactNode }): JSX.Element {
 
 export function Floater(props: { children: React.ReactNode }): JSX.Element {
 	return (
-		<div className="transition transform absolute z-100 bottom-0 inset-x-0 pb-2 sm:pb-5 opacity-100 scale-100 translate-y-0 ease-out duration-500 text-white">
-			<div className="max-w-screen-md mx-auto px-2 sm:px-4">
+		<div className="transition transform absolute z-100 bottom-4 inset-x-0 pb-2 sm:pb-5 opacity-100 scale-100 translate-y-0 ease-out duration-500 text-white">
+			<div className="max-w-screen-lg mx-auto px-2 sm:px-4">
 				<div className="p-2 rounded-lg bg-black shadow-lg sm:p-3">
 					<div className="flex flex-row items-center justify-between flex-wrap">
 						{props.children}

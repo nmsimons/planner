@@ -1,5 +1,5 @@
 {
-	"name": "brainstorm",
+	"name": "planner",
 	"version": "0.0.1",
 	"private": "true",
 	"description": "",
@@ -26,6 +26,7 @@
 		"@fluidframework/azure-client": "2.0.0-rc.3.0.0",
 		"@fluidframework/telemetry-utils": "2.0.0-rc.3.0.0",
 		"@fluidframework/test-runtime-utils": "2.0.0-rc.3.0.0",
+		"@headlessui/react": "^1.7.18",
 		"@types/react": "^18.2.0",
 		"@types/react-dom": "^18.2.0",
 		"axios": "^1.6.2",

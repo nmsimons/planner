@@ -4,15 +4,15 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { Day, Session, Sessions } from "../schema/app_schema.js";
+import { Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
 import { testRemoteNoteSelection, updateRemoteNoteSelection } from "../utils/session_helpers.js";
 import { ConnectableElement, useDrag, useDrop } from "react-dnd";
 import { useTransition } from "react-transition-state";
 import { Tree } from "fluid-framework";
-import { DeleteButton } from "./button_ux.js";
 import { ClientSession } from "../schema/session_schema.js";
+import { Navigation16Filled } from "@fluentui/react-icons";
 
 export function RootSessionWrapper(props: {
 	session: Session;
@@ -21,7 +21,7 @@ export function RootSessionWrapper(props: {
 	fluidMembers: string[];
 }): JSX.Element {
 	return (
-		<div className="bg-transparent flex flex-col justify-center h-64">
+		<div className="bg-transparent flex flex-col justify-center h-36">
 			<SessionView {...props} />
 		</div>
 	);
@@ -45,7 +45,7 @@ export function SessionView(props: {
 
 	const [remoteSelected, setRemoteSelected] = useState(false);
 
-	const [bgColor, setBgColor] = useState("bg-yellow-100");
+	const [bgColor, setBgColor] = useState("bg-gray-100");
 
 	const [invalidations, setInvalidations] = useState(0);
 
@@ -95,7 +95,7 @@ export function SessionView(props: {
 
 	useEffect(() => {
 		if (selected) {
-			setBgColor("bg-yellow-400");
+			setBgColor("bg-white");
 		} else {
 			setBgColor("bg-yellow-100");
 		}
@@ -133,10 +133,7 @@ export function SessionView(props: {
 		},
 		drop: (item) => {
 			const droppedItem = item;
-			if (
-				Tree.is(droppedItem, Session) &&
-				(Tree.is(parent, Day) || Tree.is(parent, Sessions))
-			) {
+			if (Tree.is(droppedItem, Session) && Tree.is(parent, Sessions)) {
 				moveItem(droppedItem, parent.indexOf(props.session), parent);
 			}
 			return;
@@ -170,8 +167,8 @@ export function SessionView(props: {
 				ref={attachRef}
 				className={
 					isOver && canDrop
-						? "border-l-4 border-dashed border-gray-500"
-						: "border-l-4 border-dashed border-transparent"
+						? "border-t-4 border-dashed border-gray-500"
+						: "border-t-4 border-dashed border-transparent"
 				}
 			>
 				<div
@@ -179,24 +176,24 @@ export function SessionView(props: {
 					className={
 						"relative transition-all flex flex-col " +
 						bgColor +
-						" h-48 w-48 shadow-md hover:shadow-lg hover:rotate-0 p-2 " +
+						" h-32 w-60 shadow-md hover:shadow-lg p-2 " +
 						" " +
-						(isOver && canDrop ? "translate-x-3" : "")
+						(isOver && canDrop ? "translate-y-3" : "")
 					}
 				>
-					<SessionToolbar session={props.session} />
+					<SessionToolbar />
 					<SessionTitle session={props.session} update={update} />
-					<SessionSelection show={remoteSelected} />
+					<RemoteSelection show={remoteSelected} />
 				</div>
 			</div>
 		</div>
 	);
 }
 
-function SessionSelection(props: { show: boolean }): JSX.Element {
+function RemoteSelection(props: { show: boolean }): JSX.Element {
 	if (props.show) {
 		return (
-			<div className="absolute -top-2 -left-2 h-52 w-52 rounded border-dashed border-indigo-800 border-4" />
+			<div className="absolute -top-2 -left-2 h-36 w-64 rounded border-dashed border-indigo-800 border-4" />
 		);
 	} else {
 		return <></>;
@@ -231,14 +228,10 @@ function SessionTitle(props: {
 	);
 }
 
-function SessionToolbar(props: { session: Session }): JSX.Element {
+function SessionToolbar(): JSX.Element {
 	return (
-		<div className="flex justify-between z-50">
-			<DeleteSessionButton session={props.session} />
+		<div className="flex justify-center z-50">
+			<Navigation16Filled />
 		</div>
 	);
-}
-
-function DeleteSessionButton(props: { session: Session }): JSX.Element {
-	return <DeleteButton handleClick={() => props.session.delete()}></DeleteButton>;
 }
