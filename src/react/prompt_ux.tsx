@@ -12,7 +12,7 @@ export default function Prompt(props: {
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 	return (
 		<Dialog
-			className="absolute border-2 border-black bg-white p-4 w-1/2 top-1/4 left-1/4 z-50 drop-shadow-xl"
+			className="absolute border-2 border-black bg-white p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
 			open={props.isOpen}
 			onClose={() => props.setIsOpen(false)}
 		>
