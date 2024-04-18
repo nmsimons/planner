@@ -183,7 +183,7 @@ export function DaysView(props: {
 				clientSession={props.clientSession}
 				clientId={props.clientId}
 				fluidMembers={props.fluidMembers}
-				title={day[0]}
+				title={"Day " + day[0]}
 			/>,
 		);
 	}

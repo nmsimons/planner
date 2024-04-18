@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Session, Sessions } from "../schema/app_schema.js";
+import { Conference, Days, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
@@ -57,10 +57,19 @@ export function SessionsView(props: {
 		e.stopPropagation();
 	};
 
-	let backgroundColor = "bg-green-200";
+	let backgroundColor = "bg-gray-200";
 	const parent = Tree.parent(props.sessions);
 	if (Tree.is(parent, Conference)) {
 		backgroundColor = "bg-blue-200";
+	} else if (Tree.is(parent, Days)) {
+		const grandParent = Tree.parent(parent);
+		if (Tree.is(grandParent, Conference)) {
+			if (props.sessions.length > grandParent.length) {
+				backgroundColor = "bg-red-400";
+			} else if (props.sessions.length == grandParent.length) {
+				backgroundColor = "bg-green-200";
+			}
+		}
 	}
 
 	return (

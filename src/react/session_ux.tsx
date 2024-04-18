@@ -128,7 +128,7 @@ export function SessionView(props: {
 			canDrop: !!monitor.canDrop(),
 		}),
 		canDrop: (item) => {
-			if (Tree.is(item, Session)) return true;
+			if (Tree.is(item, Session) && item !== props.session) return true;
 			return false;
 		},
 		drop: (item) => {
