@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Days } from "../schema/app_schema.js";
+import { Conference, Days, Session } from "../schema/app_schema.js";
 import { findSession } from "../utils/app_helpers.js";
 import {
 	ThumbLikeFilled,
@@ -16,6 +16,7 @@ import {
 	StarFilled,
 	CalendarAddFilled,
 	CalendarCancelFilled,
+	MoreVerticalFilled,
 } from "@fluentui/react-icons";
 import { ClientSession } from "../schema/session_schema.js";
 import { getSelectedSessions } from "../utils/session_helpers.js";
@@ -155,6 +156,16 @@ export function DeleteButton(props: {
 	);
 }
 
+export function ShowDetailsButton(props: { show: (show: boolean) => void }): JSX.Element {
+	return (
+		<MoreVerticalFilled
+			className="bg-transparent hover:bg-gray-600 text-black hover:text-white rounded"
+			color="black"
+			onClick={() => props.show(true)}
+		/>
+	);
+}
+
 export function ShowPromptButton(props: { show: (arg: boolean) => void }): JSX.Element {
 	return (
 		<IconButton
@@ -223,7 +234,7 @@ export function ButtonGroup(props: { children: React.ReactNode }): JSX.Element {
 
 export function Floater(props: { children: React.ReactNode }): JSX.Element {
 	return (
-		<div className="transition transform absolute z-100 bottom-4 inset-x-0 pb-2 sm:pb-5 opacity-100 scale-100 translate-y-0 ease-out duration-500 text-white">
+		<div className="transition transform absolute z-[1000] bottom-4 inset-x-0 pb-2 sm:pb-5 opacity-100 scale-100 translate-y-0 ease-out duration-500 text-white">
 			<div className="max-w-screen-lg mx-auto px-2 sm:px-4">
 				<div className="p-2 rounded-lg bg-black shadow-lg sm:p-3">
 					<div className="flex flex-row items-center justify-between flex-wrap">

@@ -12,7 +12,9 @@ import { ConnectableElement, useDrag, useDrop } from "react-dnd";
 import { useTransition } from "react-transition-state";
 import { Tree } from "fluid-framework";
 import { ClientSession } from "../schema/session_schema.js";
-import { Navigation16Filled } from "@fluentui/react-icons";
+import { DragFilled } from "@fluentui/react-icons";
+import { Dialog } from "@headlessui/react";
+import { ShowDetailsButton } from "./button_ux.js";
 
 export function RootSessionWrapper(props: {
 	session: Session;
@@ -20,9 +22,16 @@ export function RootSessionWrapper(props: {
 	clientSession: ClientSession;
 	fluidMembers: string[];
 }): JSX.Element {
+	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
 	return (
 		<div className="bg-transparent flex flex-col justify-center h-36">
-			<SessionView {...props} />
+			<SessionView setIsDetailsShowing={setIsDetailsOpen} {...props} />
+			<SessionDetails
+				isOpen={isDetailsOpen}
+				setIsOpen={setIsDetailsOpen}
+				session={props.session}
+			/>
 		</div>
 	);
 }
@@ -32,6 +41,7 @@ export function SessionView(props: {
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: string[];
+	setIsDetailsShowing: (arg: boolean) => void;
 }): JSX.Element {
 	const mounted = useRef(false);
 
@@ -181,7 +191,10 @@ export function SessionView(props: {
 						(isOver && canDrop ? "translate-y-3" : "")
 					}
 				>
-					<SessionToolbar />
+					<SessionToolbar
+						session={props.session}
+						setIsDetailsShowing={props.setIsDetailsShowing}
+					/>
 					<SessionTitle session={props.session} update={update} />
 					<RemoteSelection show={remoteSelected} />
 				</div>
@@ -228,10 +241,58 @@ function SessionTitle(props: {
 	);
 }
 
-function SessionToolbar(): JSX.Element {
+function SessionToolbar(props: {
+	session: Session;
+	setIsDetailsShowing: (arg: boolean) => void;
+}): JSX.Element {
 	return (
-		<div className="flex justify-center z-50">
-			<Navigation16Filled />
+		<div className="flex justify-between z-50">
+			<DragFilled />
+			<ShowDetailsButton show={props.setIsDetailsShowing} />
 		</div>
+	);
+}
+
+export default function SessionDetails(props: {
+	isOpen: boolean;
+	setIsOpen: (arg: boolean) => void;
+	session: Session;
+}): JSX.Element {
+	return (
+		<Dialog
+			className="absolute border-2 border-black bg-white p-4 w-1/2 top-1/4 left-1/4 z-50"
+			open={props.isOpen}
+			onClose={() => props.setIsOpen(false)}
+		>
+			<Dialog.Panel className="w-full text-left align-middle">
+				<Dialog.Title className="font-bold text-lg">Session Details</Dialog.Title>
+				<div>
+					<textarea
+						rows={1}
+						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+						value={props.session.title}
+						onChange={(e) => {
+							props.session.updateTitle(e.target.value);
+						}}
+					/>
+					<textarea
+						rows={4}
+						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+						value={props.session.abstract}
+						onChange={(e) => {
+							props.session.updateAbstract(e.target.value);
+						}}
+					/>
+					<div className="flex flex-row gap-4">
+						<button
+							className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
+							onClick={() => props.setIsOpen(false)}
+						>
+							Close
+						</button>
+					</div>
+				</div>
+			</Dialog.Panel>
+		</Dialog>
 	);
 }

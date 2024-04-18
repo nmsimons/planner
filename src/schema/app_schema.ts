@@ -119,7 +119,7 @@ export class Conference extends sf.object("Conference", {
 	name: sf.string,
 	sessions: Sessions,
 	days: Days,
-	length: sf.number,
+	sessionsPerDay: sf.number,
 }) {}
 
 // Export the tree config appropriate for this schema.
@@ -128,5 +128,5 @@ export const appTreeConfiguration = new TreeConfiguration(
 	// Schema for the root
 	Conference,
 	// initial tree
-	() => new Conference({ name: "Conference", sessions: [], days: new Map(), length: 5 }),
+	() => new Conference({ name: "Conference", sessions: [], days: new Map(), sessionsPerDay: 5 }),
 );

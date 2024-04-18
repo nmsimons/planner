@@ -10,7 +10,7 @@ import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
 import { ClientSession } from "../schema/session_schema.js";
 import { Tree } from "fluid-framework";
-import { SessionView } from "./session_ux.js";
+import { RootSessionWrapper, SessionView } from "./session_ux.js";
 
 export function SessionsView(props: {
 	sessions: Sessions;
@@ -64,9 +64,9 @@ export function SessionsView(props: {
 	} else if (Tree.is(parent, Days)) {
 		const grandParent = Tree.parent(parent);
 		if (Tree.is(grandParent, Conference)) {
-			if (props.sessions.length > grandParent.length) {
+			if (props.sessions.length > grandParent.sessionsPerDay) {
 				backgroundColor = "bg-red-400";
-			} else if (props.sessions.length == grandParent.length) {
+			} else if (props.sessions.length == grandParent.sessionsPerDay) {
 				backgroundColor = "bg-green-200";
 			}
 		}
@@ -108,7 +108,7 @@ function SessionsViewContent(props: {
 	const sessionsArray = [];
 	for (const s of props.sessions) {
 		sessionsArray.push(
-			<SessionView
+			<RootSessionWrapper
 				key={s.id}
 				session={s}
 				clientId={props.clientId}
