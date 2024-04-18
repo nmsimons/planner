@@ -728,6 +728,14 @@ video {
   height: 300px;
 }
 
+.h-dvh {
+  height: 100dvh;
+}
+
+.h-96 {
+  height: 24rem;
+}
+
 .min-h-72 {
   min-height: 18rem;
 }
@@ -762,6 +770,11 @@ video {
 
 .w-\[500px\] {
   width: 500px;
+}
+
+.w-fit {
+  width: -moz-fit-content;
+  width: fit-content;
 }
 
 .min-w-72 {

@@ -71,15 +71,20 @@ export function createSessionPrompter(): (
 export function createPrompter(
 	systemPrompt = sessionSystemPrompt,
 ): (prompt: string) => Promise<string | undefined> {
-	const endpoint = process.env.AZURE_OPENAI_ENDPOINT;
+	const endpoint =
+		process.env.AZURE_OPENAI_ENDPOINT ?? localStorage.getItem("AZURE_OPENAI_ENDPOINT");
 
-	if (endpoint === undefined) {
-		throw Error("Expected AZURE_OPENAI_ENDPOINT to be set in environment variables");
+	if (endpoint === undefined || endpoint === null) {
+		throw Error(
+			"Expected AZURE_OPENAI_ENDPOINT to be set in environment variables or local storage",
+		);
 	}
-	const apiKey = process.env.AZURE_OPENAI_API_KEY;
+	const apiKey = process.env.AZURE_OPENAI_API_KEY ?? localStorage.getItem("AZURE_OPENAI_API_KEY");
 
-	if (apiKey === undefined) {
-		throw Error("Expected AZURE_OPENAI_API_KEY to be set in environment variables");
+	if (apiKey === undefined || apiKey === null) {
+		throw Error(
+			"Expected AZURE_OPENAI_API_KEY to be set in environment variables or local storage",
+		);
 	}
 
 	const model = createAzureOpenAILanguageModel(apiKey, endpoint);
