@@ -37,7 +37,7 @@ async function start() {
 
 	const undoRedo = createUndoRedoStacks(appTree.events);
 
-	const prompter = createSessionPrompter();
+	let prompter: ReturnType<typeof createSessionPrompter> | undefined;
 
 	// Render the app - note we attach new containers after render so
 	// the app renders instantly on create new flow. The app will be
@@ -51,6 +51,13 @@ async function start() {
 				container={container}
 				undoRedo={undoRedo}
 				insertTemplate={async (prompt: string) => {
+					if (prompter === undefined) {
+						try {
+							prompter = createSessionPrompter();
+						} catch {
+							return;
+						}
+					}
 					const sessions = await prompter(prompt);
 					if (sessions === undefined) {
 						alert("AI failed to generate sessions. Please try again.");
