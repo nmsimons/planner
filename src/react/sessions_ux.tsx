@@ -10,7 +10,7 @@ import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
 import { ClientSession } from "../schema/session_schema.js";
 import { Tree } from "fluid-framework";
-import { RootSessionWrapper, SessionView } from "./session_ux.js";
+import { RootSessionWrapper } from "./session_ux.js";
 
 export function SessionsView(props: {
 	sessions: Sessions;
@@ -81,7 +81,7 @@ export function SessionsView(props: {
 				(isOver && canDrop ? "border-gray-500" : "border-transparent")
 			}
 		>
-			<div className={backgroundColor + " p-2 h-fit min-h-96 min-w-72 transition-all "}>
+			<div className={backgroundColor + " p-2 h-fit min-h-72 min-w-72 transition-all "}>
 				<SessionsToolbar title={props.title} />
 				<SessionsViewContent {...props} />
 			</div>

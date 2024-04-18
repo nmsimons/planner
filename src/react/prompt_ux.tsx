@@ -21,7 +21,7 @@ export default function Prompt(props: {
 				<Dialog.Description>
 					{isLoadingTemplate
 						? "Generating template..."
-						: "Populate your board with ideas based on this prompt."}
+						: "Populate your conference with session ideas based on this prompt."}
 				</Dialog.Description>
 				<div className={isLoadingTemplate ? "invisible" : ""}>
 					<textarea

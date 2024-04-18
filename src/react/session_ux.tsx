@@ -260,7 +260,7 @@ export default function SessionDetails(props: {
 }): JSX.Element {
 	return (
 		<Dialog
-			className="absolute border-2 border-black bg-white p-4 w-1/2 top-1/4 left-1/4 z-50"
+			className="absolute border-2 border-black bg-white p-4 w-1/3 top-1/4 left-1/4 z-50"
 			open={props.isOpen}
 			onClose={() => props.setIsOpen(false)}
 		>
