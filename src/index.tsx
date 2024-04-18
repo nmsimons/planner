@@ -14,6 +14,7 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { appTreeConfiguration } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
+import { createSessionPrompter } from "./utils/gpt_helpers.js";
 
 async function start() {
 	// create the root element for React
@@ -36,6 +37,8 @@ async function start() {
 
 	const undoRedo = createUndoRedoStacks(appTree.events);
 
+	const prompter = createSessionPrompter();
+
 	// Render the app - note we attach new containers after render so
 	// the app renders instantly on create new flow. The app will be
 	// interactive immediately.
@@ -47,7 +50,14 @@ async function start() {
 				audience={services.audience}
 				container={container}
 				undoRedo={undoRedo}
-				insertTemplate={async (prompt: string) => {}} // eslint-disable-line @typescript-eslint/no-empty-function
+				insertTemplate={async (prompt: string) => {
+					const sessions = await prompter(prompt);
+					if (sessions === undefined) {
+						alert("AI failed to generate sessions. Please try again.");
+						return;
+					}
+					appTree.root.sessions.insertAtEnd(...sessions);
+				}} // eslint-disable-line @typescript-eslint/no-empty-function
 			/>
 		</DndProvider>,
 	);

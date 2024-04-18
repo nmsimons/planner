@@ -55,12 +55,13 @@ export class Session extends sf.object(
 export class Sessions extends sf.array("Sessions", Session) {
 	// Add a session to the conference
 	public addSession() {
+		const currentTime = new Date().getTime();
 		const session = new Session({
 			id: uuid(),
 			title: "New Session",
 			abstract: "New Abstract",
-			created: new Date().getTime(),
-			lastChanged: new Date().getTime(),
+			created: currentTime,
+			lastChanged: currentTime,
 		});
 		this.insertAtEnd(session);
 		return session;
