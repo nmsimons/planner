@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useRef, useState } from "react";
-import { Session, Sessions } from "../schema/app_schema.js";
+import { Conference, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
 import { testRemoteNoteSelection, updateRemoteNoteSelection } from "../utils/session_helpers.js";
@@ -44,8 +44,12 @@ export function SessionView(props: {
 	setIsDetailsShowing: (arg: boolean) => void;
 }): JSX.Element {
 	const mounted = useRef(false);
+	let unscheduled = false;
 
 	const parent = Tree.parent(props.session);
+	if (!Tree.is(parent, Sessions)) return <></>;
+	const grandParent = Tree.parent(parent);
+	if (Tree.is(grandParent, Conference)) unscheduled = true;
 
 	const [{ status }, toggle] = useTransition({
 		timeout: 1000,
@@ -166,6 +170,9 @@ export function SessionView(props: {
 		}
 	};
 
+	let borderPostion = "";
+	unscheduled ? (borderPostion = "border-l-4") : (borderPostion = "border-t-4");
+
 	return (
 		<div
 			onClick={(e) => handleClick(e)}
@@ -177,8 +184,8 @@ export function SessionView(props: {
 				ref={attachRef}
 				className={
 					isOver && canDrop
-						? "border-t-4 border-dashed border-gray-500"
-						: "border-t-4 border-dashed border-transparent"
+						? borderPostion + " border-dashed border-gray-500"
+						: borderPostion + " border-dashed border-transparent"
 				}
 			>
 				<div
