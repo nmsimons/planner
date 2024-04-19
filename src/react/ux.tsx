@@ -83,7 +83,7 @@ export function Header(props: {
 			<div className="flex m-2">Planner</div>
 			<div className="flex m-2 items-center">
 				{props.saved ? "saved" : "not saved"} | {props.connectionState} |
-				<UserAvatars fluidMembers={props.fluidMembers} />
+				<UserAvatars fluidMembers={props.fluidMembers} layoutType="spread" />
 			</div>
 		</div>
 	);
