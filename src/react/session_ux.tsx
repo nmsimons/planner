@@ -171,7 +171,10 @@ export function SessionView(props: {
 	};
 
 	let borderPostion = "";
-	unscheduled ? (borderPostion = "border-l-4") : (borderPostion = "border-t-4");
+	let hoverMovement = "";
+	unscheduled
+		? ((borderPostion = "border-l-4"), (hoverMovement = "translate-x-3"))
+		: ((borderPostion = "border-t-4"), (hoverMovement = "translate-y-3"));
 
 	return (
 		<div
@@ -195,7 +198,7 @@ export function SessionView(props: {
 						bgColor +
 						" h-32 w-60 shadow-md hover:shadow-lg p-2 " +
 						" " +
-						(isOver && canDrop ? "translate-y-3" : "")
+						(isOver && canDrop ? hoverMovement : "")
 					}
 				>
 					<SessionToolbar

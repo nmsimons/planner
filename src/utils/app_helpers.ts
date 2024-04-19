@@ -37,7 +37,7 @@ export function findSession(conference: Conference, id: string): Session | undef
 		if (s.id === id) return s;
 	}
 	for (const day of conference.days) {
-		for (const s of day[1]) {
+		for (const s of day) {
 			if (s.id === id) return s;
 		}
 	}

@@ -58,9 +58,13 @@ export function SessionsView(props: {
 	};
 
 	let backgroundColor = "bg-gray-200";
+	let formatting = "p-2 h-fit min-h-72 min-w-72 transition-all";
+	let borderFormatting = "transition-all border-4 border-dashed h-fit w-fit";
 	const parent = Tree.parent(props.sessions);
 	if (Tree.is(parent, Conference)) {
 		backgroundColor = "bg-blue-200";
+		formatting = "p-2 h-fit w-full min-w-full min-h-72 transition-all";
+		borderFormatting = "transition-all border-4 border-dashed h-fit w-full";
 	} else if (Tree.is(parent, Days)) {
 		const grandParent = Tree.parent(parent);
 		if (Tree.is(grandParent, Conference)) {
@@ -77,11 +81,12 @@ export function SessionsView(props: {
 			onClick={(e) => handleClick(e)}
 			ref={attachRef}
 			className={
-				"transition-all border-4 border-dashed h-fit " +
+				borderFormatting +
+				" " +
 				(isOver && canDrop ? "border-gray-500" : "border-transparent")
 			}
 		>
-			<div className={backgroundColor + " p-2 h-fit min-h-72 min-w-72 transition-all "}>
+			<div className={backgroundColor + " " + formatting}>
 				<SessionsToolbar title={props.title} />
 				<SessionsViewContent {...props} />
 			</div>
@@ -118,5 +123,17 @@ function SessionsViewContent(props: {
 		);
 	}
 
-	return <div className="flex flex-col gap-4 p-4 content-start">{sessionsArray}</div>;
+	const parent = Tree.parent(props.sessions);
+
+	if (Tree.is(parent, Conference)) {
+		return (
+			<div className="flex flex-row flex-wrap w-full gap-4 p-4 content-start">
+				{sessionsArray}
+			</div>
+		);
+	} else {
+		return (
+			<div className="flex flex-col flex-nowrap gap-4 p-4 content-start">{sessionsArray}</div>
+		);
+	}
 }

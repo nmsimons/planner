@@ -159,9 +159,13 @@ export function ConferenceView(props: {
 	}
 
 	return (
-		<div className="flex grow-0 flex-row h-full w-full flex-nowrap gap-4 p-4 content-start overflow-y-scroll">
-			<SessionsView sessions={props.conference.sessions} title="Unscheduled" {...props} />
-			<DaysView {...props} />
+		<div className="flex flex-col h-full w-full content-start overflow-auto">
+			<div className="flex w-full p-4">
+				<SessionsView sessions={props.conference.sessions} title="Unscheduled" {...props} />
+			</div>
+			<div className="flex flex-row h-full w-full flex-nowrap gap-4 p-4 content-start">
+				<DaysView {...props} />
+			</div>
 			<div className="flex w-full h-24"></div>
 		</div>
 	);
@@ -178,12 +182,12 @@ export function DaysView(props: {
 	for (const day of props.conference.days) {
 		dayArray.push(
 			<SessionsView
-				key={day[0]}
-				sessions={day[1]}
+				key={Tree.key(day)}
+				sessions={day}
 				clientSession={props.clientSession}
 				clientId={props.clientId}
 				fluidMembers={props.fluidMembers}
-				title={"Day " + day[0]}
+				title={"Day " + ((Tree.key(day) as number) + 1)}
 			/>,
 		);
 	}

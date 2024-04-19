@@ -68,13 +68,13 @@ export class Sessions extends sf.array("Sessions", Session) {
 	}
 }
 
-export class Days extends sf.map("Days", Sessions) {
+export class Days extends sf.array("Days", Sessions) {
 	// Add a day to the conference with a number as its key
 	public addDay(): Sessions {
 		let day: Sessions | undefined;
 		Tree.runTransaction<Days>(this, () => {
 			day = new Sessions([]);
-			this.set((this.size + 1).toString(), day);
+			this.insertAtEnd(day);
 		});
 		if (day === undefined) {
 			throw new Error("Failed to add day");
@@ -84,28 +84,25 @@ export class Days extends sf.map("Days", Sessions) {
 
 	// Remove the last day from the conference
 	public removeDay() {
+		if (this.length === 0) {
+			return;
+		}
 		// Get the conference object from the parent of this map
 		const conference = Tree.parent(this);
 		// Get the sessions array from the conference object
 		// and move all the sessions in the Day to the sessions array
 		if (Tree.is(conference, Conference)) {
 			const sessions = conference?.sessions;
-			const lastKey = Array.from(this.keys()).pop();
-			if (lastKey) {
+			const lastDay = this[this.length - 1];
+			if (lastDay) {
 				Tree.runTransaction<Days>(this, () => {
-					// Get the Day from the map
-					const day = this.get(lastKey);
-					// Convince TypeScript that day is not undefined
-					if (day === undefined) {
-						return;
-					}
 					// Move all the sessions in the Day to the sessions array
-					if (day.length !== 0) {
+					if (lastDay.length !== 0) {
 						const index = sessions.length;
-						sessions.moveRangeToIndex(index, 0, day.length, day);
+						sessions.moveRangeToIndex(index, 0, lastDay.length, lastDay);
 					}
 					// Remove the day from the conference
-					this.delete(lastKey);
+					this.removeAt(this.length - 1);
 				});
 			}
 		}
@@ -129,5 +126,5 @@ export const appTreeConfiguration = new TreeConfiguration(
 	// Schema for the root
 	Conference,
 	// initial tree
-	() => new Conference({ name: "Conference", sessions: [], days: new Map(), sessionsPerDay: 5 }),
+	() => new Conference({ name: "Conference", sessions: [], days: [], sessionsPerDay: 5 }),
 );
