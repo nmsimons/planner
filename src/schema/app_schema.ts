@@ -126,5 +126,5 @@ export const appTreeConfiguration = new TreeConfiguration(
 	// Schema for the root
 	Conference,
 	// initial tree
-	() => new Conference({ name: "Conference", sessions: [], days: [], sessionsPerDay: 5 }),
+	() => new Conference({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 }),
 );

@@ -159,14 +159,15 @@ export function ConferenceView(props: {
 	}
 
 	return (
-		<div className="flex flex-col h-full w-full content-start overflow-auto">
-			<div className="flex w-full p-4">
-				<SessionsView sessions={props.conference.sessions} title="Unscheduled" {...props} />
+		<div className="h-full w-full overflow-auto">
+			<div className="flex flex-row h-full w-full content-start">
+				<div className="flex h-full w-fit p-4">
+					<SessionsView sessions={props.conference.sessions} title="" {...props} />
+				</div>
+				<div className="flex flex-row h-full w-full flex-nowrap gap-4 p-4 content-start">
+					<DaysView {...props} />
+				</div>
 			</div>
-			<div className="flex flex-row h-full w-full flex-nowrap gap-4 p-4 content-start">
-				<DaysView {...props} />
-			</div>
-			<div className="flex w-full h-24"></div>
 		</div>
 	);
 }

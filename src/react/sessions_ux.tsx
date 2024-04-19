@@ -63,7 +63,7 @@ export function SessionsView(props: {
 	const parent = Tree.parent(props.sessions);
 	if (Tree.is(parent, Conference)) {
 		backgroundColor = "bg-blue-200";
-		formatting = "p-2 h-fit w-full min-w-full min-h-72 transition-all";
+		formatting = "p-2 h-[calc(100vh-182px)] w-[580px] transition-all overflow-auto";
 		borderFormatting = "transition-all border-4 border-dashed h-fit w-full";
 	} else if (Tree.is(parent, Days)) {
 		const grandParent = Tree.parent(parent);
@@ -95,13 +95,17 @@ export function SessionsView(props: {
 }
 
 function SessionsToolbar(props: { title: string }): JSX.Element {
-	return (
-		<div className="flex flex-row justify-between">
-			<div className="flex w-0 grow p-1 mb-2 mr-2 text-lg font-bold text-black bg-transparent">
-				{props.title}
+	if (props.title === "") {
+		return <></>;
+	} else {
+		return (
+			<div className="flex flex-row justify-between">
+				<div className="flex w-0 grow p-1 mb-2 mr-2 text-lg font-bold text-black bg-transparent">
+					{props.title}
+				</div>
 			</div>
-		</div>
-	);
+		);
+	}
 }
 
 function SessionsViewContent(props: {
