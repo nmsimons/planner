@@ -13,6 +13,7 @@ import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
 import { undefinedUserId } from "../utils/utils.js";
 import Prompt from "./prompt_ux.js";
+import { UserAvatars } from "./avatars_ux.js";
 
 export function ReactApp(props: {
 	items: TreeView<typeof Conference>;
@@ -80,9 +81,9 @@ export function Header(props: {
 	return (
 		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full">
 			<div className="flex m-2">Planner</div>
-			<div className="flex m-2 ">
-				{props.saved ? "saved" : "not saved"} | {props.connectionState} | users:{" "}
-				{props.fluidMembers.length}
+			<div className="flex m-2 items-center">
+				{props.saved ? "saved" : "not saved"} | {props.connectionState} |
+				<UserAvatars fluidMembers={props.fluidMembers} />
 			</div>
 		</div>
 	);
