@@ -58,7 +58,7 @@ export function SessionsView(props: {
 	};
 
 	let backgroundColor = "bg-gray-200";
-	let formatting = "p-2 h-fit min-h-72 min-w-72 transition-all";
+	let formatting = "p-2 h-[calc(100vh-182px)] min-w-72 transition-all overflow-auto";
 	let borderFormatting = "transition-all border-4 border-dashed h-fit w-fit";
 	const parent = Tree.parent(props.sessions);
 	if (Tree.is(parent, Conference)) {
