@@ -71,14 +71,8 @@ export class Sessions extends sf.array("Sessions", Session) {
 export class Days extends sf.array("Days", Sessions) {
 	// Add a day to the conference with a number as its key
 	public addDay(): Sessions {
-		let day: Sessions | undefined;
-		Tree.runTransaction<Days>(this, () => {
-			day = new Sessions([]);
-			this.insertAtEnd(day);
-		});
-		if (day === undefined) {
-			throw new Error("Failed to add day");
-		}
+		const day = new Sessions([]);
+		this.insertAtEnd(day);
 		return day;
 	}
 
@@ -106,10 +100,6 @@ export class Days extends sf.array("Days", Sessions) {
 				});
 			}
 		}
-	}
-
-	getKeyFromValue(item: Sessions) {
-		return Tree.key(item);
 	}
 }
 

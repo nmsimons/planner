@@ -45,7 +45,7 @@ async function start() {
 	root.render(
 		<DndProvider backend={HTML5Backend}>
 			<ReactApp
-				items={appTree}
+				conferenceTree={appTree}
 				sessionTree={sessionTree}
 				audience={services.audience}
 				container={container}
