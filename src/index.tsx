@@ -38,9 +38,6 @@ async function start() {
 			await anonymousAzureStart();
 			break;
 	}
-
-	// Start the app
-	await anonymousAzureStart();
 }
 
 async function speStart() {
