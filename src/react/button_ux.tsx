@@ -233,7 +233,7 @@ export function ButtonGroup(props: { children: React.ReactNode }): JSX.Element {
 }
 
 export function Divider(): JSX.Element {
-	return <div className="border-r border-gray-400 border-2 h-6"></div>;
+	return <div className="border-r border-gray-400 border-1 h-6"></div>;
 }
 
 export function Floater(props: { children: React.ReactNode }): JSX.Element {
