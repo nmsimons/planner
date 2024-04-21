@@ -182,6 +182,9 @@ export function SessionView(props: {
 	return (
 		<div
 			onClick={(e) => handleClick(e)}
+			onDoubleClick={(e) => {
+				e.stopPropagation(), props.setIsDetailsShowing(true);
+			}}
 			className={`transition duration-500${
 				status === "exiting" ? " transform ease-out scale-110" : ""
 			}`}
@@ -247,8 +250,9 @@ function SessionTitle(props: {
 
 	return (
 		<textarea
-			className="p-2 bg-transparent h-full w-full resize-none z-50"
+			className="p-2 bg-transparent h-full w-full resize-none z-50 focus:outline-none"
 			value={props.session.title}
+			readOnly={true}
 			onClick={(e) => handleClick(e)}
 			onChange={(e) => props.session.updateTitle(e.target.value)}
 		/>
@@ -260,12 +264,7 @@ function SessionToolbar(props: {
 	setIsDetailsShowing: (arg: boolean) => void;
 }): JSX.Element {
 	return (
-		<div
-			onDoubleClick={(e) => {
-				e.stopPropagation(), props.setIsDetailsShowing(true);
-			}}
-			className="flex justify-between z-50"
-		>
+		<div className="flex justify-between z-50">
 			<DragFilled />
 			<ShowDetailsButton show={props.setIsDetailsShowing} />
 		</div>
@@ -294,10 +293,7 @@ function SessionTypeLabel(props: { session: Session }): JSX.Element {
 
 	return (
 		<div
-			className={
-				"absolute -bottom-2 -right-2 h-6 w-6 rounded-full overflow-hidden shadow-md align-bottom hover:shadow-lg text-center font-bold text-white font-mono " +
-				color
-			}
+			className={`absolute -bottom-2 -right-2 h-6 w-6 rounded-full overflow-hidden shadow-md align-bottom hover:shadow-lg text-center font-bold text-white font-mono z-[1000] ${color}`}
 		>
 			{props.session.sessionType.substring(0, 1).toLocaleUpperCase()}
 		</div>

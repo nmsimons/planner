@@ -100,9 +100,9 @@ export function SessionsView(props: {
 
 function SessionsDecoration(props: { sessions: Sessions }): JSX.Element {
 	const parent = Tree.parent(props.sessions);
-	const formatting = "absolute bottom-2 right-6 bg-transparent font-extrabold text-8xl z-0";
+	const formatting = "absolute bottom-2 right-6 bg-transparent font-extrabold text-7xl z-0";
 	if (Tree.is(parent, Conference)) {
-		return <div className={`text-blue-300 ${formatting}`}>Sessions</div>;
+		return <div className={`text-blue-300 ${formatting}`}>Unscheduled</div>;
 	} else {
 		return <div className={`text-gray-300 ${formatting}`}>Day</div>;
 	}
