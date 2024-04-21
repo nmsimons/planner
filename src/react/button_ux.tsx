@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Days, Session } from "../schema/app_schema.js";
+import { Conference, Days } from "../schema/app_schema.js";
 import { findSession } from "../utils/app_helpers.js";
 import {
 	ThumbLikeFilled,

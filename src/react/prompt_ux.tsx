@@ -10,9 +10,10 @@ export default function Prompt(props: {
 		"Generate 12 session ideas for a conference on AI. Include 2 keynotes, 4 workshops, 4 regular sessions, and 2 panels.",
 	);
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
+	const buttonClass = "bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded";
 	return (
 		<Dialog
-			className="absolute rounded bg-blue-200 p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
+			className="absolute rounded bg-blue-300 p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
 			open={props.isOpen}
 			onClose={() => props.setIsOpen(false)}
 		>
@@ -36,7 +37,7 @@ export default function Prompt(props: {
 					/>
 					<div className="flex flex-row gap-4">
 						<button
-							className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
+							className={buttonClass}
 							id="insertTemplateButton"
 							onClick={() => {
 								setIsLoadingTemplate(true);
@@ -48,10 +49,7 @@ export default function Prompt(props: {
 						>
 							Get me started
 						</button>
-						<button
-							className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
-							onClick={() => props.setIsOpen(false)}
-						>
+						<button className={buttonClass} onClick={() => props.setIsOpen(false)}>
 							Cancel
 						</button>
 					</div>

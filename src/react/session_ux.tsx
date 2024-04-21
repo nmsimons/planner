@@ -25,7 +25,7 @@ export function RootSessionWrapper(props: {
 	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
 	return (
-		<div className="bg-transparent flex flex-col justify-center h-36">
+		<div className="bg-transparent flex flex-col justify-center h-36 z-10">
 			<SessionView setIsDetailsShowing={setIsDetailsOpen} {...props} />
 			<SessionDetails
 				isOpen={isDetailsOpen}
@@ -309,6 +309,7 @@ export default function SessionDetails(props: {
 	setIsOpen: (arg: boolean) => void;
 	session: Session;
 }): JSX.Element {
+	const buttonClass = "text-white font-bold py-2 px-4 rounded";
 	return (
 		<Dialog
 			className="absolute bg-yellow-100 rounded p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
@@ -336,13 +337,13 @@ export default function SessionDetails(props: {
 					/>
 					<div className="flex flex-row gap-4">
 						<button
-							className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
+							className={`bg-gray-500 hover:bg-gray-800 ${buttonClass}`}
 							onClick={() => props.setIsOpen(false)}
 						>
 							Close
 						</button>
 						<button
-							className="bg-red-500 hover:bg-red-800 text-white font-bold py-2 px-4 rounded"
+							className={`bg-red-500 hover:bg-red-800 ${buttonClass}`}
 							onClick={() => {
 								props.session.delete(), props.setIsOpen(false);
 							}}

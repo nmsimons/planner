@@ -58,14 +58,17 @@ export function SessionsView(props: {
 	};
 
 	let backgroundColor = "bg-gray-200";
-	let formatting = "p-2 h-[calc(100vh-182px)] min-w-72 transition-all overflow-auto";
-	let borderFormatting = "transition-all border-4 border-dashed h-fit w-fit";
+	let formatting = "p-2 h-[calc(100vh-182px)] transition-all overflow-auto";
+	let borderFormatting = "relative transition-all border-4 border-dashed h-fit overflow-hidden";
 	const parent = Tree.parent(props.sessions);
 	if (Tree.is(parent, Conference)) {
 		backgroundColor = "bg-blue-200";
-		formatting = "p-2 h-[calc(100vh-182px)] w-[580px] transition-all overflow-auto";
-		borderFormatting = "transition-all border-4 border-dashed h-fit w-full";
+		formatting = `${formatting} w-[580px]`;
+		borderFormatting = `${borderFormatting} w-full`;
+		("relative transition-all border-4 border-dashed h-fit w-full overflow-hidden");
 	} else if (Tree.is(parent, Days)) {
+		formatting = `${formatting} min-w-72`;
+		borderFormatting = `${borderFormatting} w-fit`;
 		const grandParent = Tree.parent(parent);
 		if (Tree.is(grandParent, Conference)) {
 			if (props.sessions.length > grandParent.sessionsPerDay) {
@@ -87,14 +90,25 @@ export function SessionsView(props: {
 			}
 		>
 			<div className={backgroundColor + " " + formatting}>
-				<SessionsToolbar title={props.title} />
+				<SessionsTitle title={props.title} />
 				<SessionsViewContent {...props} />
 			</div>
+			<SessionsDecoration sessions={props.sessions} />
 		</div>
 	);
 }
 
-function SessionsToolbar(props: { title: string }): JSX.Element {
+function SessionsDecoration(props: { sessions: Sessions }): JSX.Element {
+	const parent = Tree.parent(props.sessions);
+	const formatting = "absolute bottom-2 right-6 bg-transparent font-extrabold text-8xl z-0";
+	if (Tree.is(parent, Conference)) {
+		return <div className={`text-blue-300 ${formatting}`}>Sessions</div>;
+	} else {
+		return <div className={`text-gray-300 ${formatting}`}>Day</div>;
+	}
+}
+
+function SessionsTitle(props: { title: string }): JSX.Element {
 	if (props.title === "") {
 		return <></>;
 	} else {
@@ -131,9 +145,11 @@ function SessionsViewContent(props: {
 
 	if (Tree.is(parent, Conference)) {
 		return (
-			<div className="flex flex-row flex-wrap w-full gap-4 p-4 content-start">
-				{sessionsArray}
-			</div>
+			<>
+				<div className="flex flex-row flex-wrap w-full gap-4 p-4 content-start">
+					{sessionsArray}
+				</div>
+			</>
 		);
 	} else {
 		return (
