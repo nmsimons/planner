@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { Conference, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
@@ -13,7 +13,7 @@ import { useTransition } from "react-transition-state";
 import { Tree } from "fluid-framework";
 import { ClientSession } from "../schema/session_schema.js";
 import { DragFilled } from "@fluentui/react-icons";
-import { Dialog } from "@headlessui/react";
+import { Dialog, Listbox, Transition } from "@headlessui/react";
 import { ShowDetailsButton } from "./button_ux.js";
 
 export function RootSessionWrapper(props: {
@@ -25,7 +25,7 @@ export function RootSessionWrapper(props: {
 	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
 	return (
-		<div className="bg-transparent flex flex-col justify-center h-36">
+		<div className="bg-transparent flex flex-col justify-center h-36 z-10">
 			<SessionView setIsDetailsShowing={setIsDetailsOpen} {...props} />
 			<SessionDetails
 				isOpen={isDetailsOpen}
@@ -46,6 +46,9 @@ export function SessionView(props: {
 	const mounted = useRef(false);
 	let unscheduled = false;
 
+	const color = "bg-white";
+	const selectedColor = "bg-yellow-100";
+
 	const parent = Tree.parent(props.session);
 	if (!Tree.is(parent, Sessions)) return <></>;
 	const grandParent = Tree.parent(parent);
@@ -59,7 +62,7 @@ export function SessionView(props: {
 
 	const [remoteSelected, setRemoteSelected] = useState(false);
 
-	const [bgColor, setBgColor] = useState("bg-gray-100");
+	const [bgColor, setBgColor] = useState(color);
 
 	const [invalidations, setInvalidations] = useState(0);
 
@@ -109,9 +112,9 @@ export function SessionView(props: {
 
 	useEffect(() => {
 		if (selected) {
-			setBgColor("bg-white");
+			setBgColor(selectedColor);
 		} else {
-			setBgColor("bg-yellow-100");
+			setBgColor(color);
 		}
 	}, [selected]);
 
@@ -179,6 +182,9 @@ export function SessionView(props: {
 	return (
 		<div
 			onClick={(e) => handleClick(e)}
+			onDoubleClick={(e) => {
+				e.stopPropagation(), props.setIsDetailsShowing(true);
+			}}
 			className={`transition duration-500${
 				status === "exiting" ? " transform ease-out scale-110" : ""
 			}`}
@@ -194,7 +200,7 @@ export function SessionView(props: {
 				<div
 					style={{ opacity: isDragging ? 0.5 : 1 }}
 					className={
-						"relative transition-all flex flex-col " +
+						"relative transition-all flex flex-col rounded " +
 						bgColor +
 						" h-32 w-60 shadow-md hover:shadow-lg p-2 " +
 						" " +
@@ -206,6 +212,7 @@ export function SessionView(props: {
 						setIsDetailsShowing={props.setIsDetailsShowing}
 					/>
 					<SessionTitle session={props.session} update={update} />
+					<SessionTypeLabel session={props.session} />
 					<RemoteSelection show={remoteSelected} />
 				</div>
 			</div>
@@ -243,8 +250,9 @@ function SessionTitle(props: {
 
 	return (
 		<textarea
-			className="p-2 bg-transparent h-full w-full resize-none z-50"
+			className="p-2 bg-transparent h-full w-full resize-none z-50 focus:outline-none"
 			value={props.session.title}
+			readOnly={true}
 			onClick={(e) => handleClick(e)}
 			onChange={(e) => props.session.updateTitle(e.target.value)}
 		/>
@@ -263,31 +271,61 @@ function SessionToolbar(props: {
 	);
 }
 
+function SessionTypeLabel(props: { session: Session }): JSX.Element {
+	const sessionType = props.session.sessionType;
+	let color = "";
+	switch (sessionType) {
+		case "keynote":
+			color = "bg-red-500";
+			break;
+		case "panel":
+			color = "bg-blue-500";
+			break;
+		case "session":
+			color = "bg-green-500";
+			break;
+		case "workshop":
+			color = "bg-yellow-500";
+			break;
+		default:
+			color = "bg-gray-500";
+	}
+
+	return (
+		<div
+			className={`absolute -bottom-2 -right-2 h-6 w-6 rounded-full overflow-hidden shadow-md align-bottom hover:shadow-lg text-center font-bold text-white font-mono z-[1000] ${color}`}
+		>
+			{props.session.sessionType.substring(0, 1).toLocaleUpperCase()}
+		</div>
+	);
+}
+
 export default function SessionDetails(props: {
 	isOpen: boolean;
 	setIsOpen: (arg: boolean) => void;
 	session: Session;
 }): JSX.Element {
+	const buttonClass = "text-white font-bold py-2 px-4 rounded";
 	return (
 		<Dialog
-			className="absolute border-2 border-black bg-white p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
+			className="absolute bg-yellow-100 rounded p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
 			open={props.isOpen}
 			onClose={() => props.setIsOpen(false)}
 		>
 			<Dialog.Panel className="w-full text-left align-middle">
-				<Dialog.Title className="font-bold text-lg">Session Details</Dialog.Title>
+				<Dialog.Title className="font-bold text-lg pb-1">Session Details</Dialog.Title>
 				<div>
-					<textarea
-						rows={1}
-						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+					<input
+						className="resize-none border-2 border-gray-500 bg-white mb-2 p-2 text-black w-full h-full"
 						value={props.session.title}
 						onChange={(e) => {
 							props.session.updateTitle(e.target.value);
 						}}
 					/>
+					<TypeList session={props.session} />
 					<textarea
-						rows={4}
-						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+						rows={5}
+						className="resize-none border-2 border-gray-500 bg-white mb-2 p-2 text-black w-full h-full"
 						value={props.session.abstract}
 						onChange={(e) => {
 							props.session.updateAbstract(e.target.value);
@@ -295,14 +333,70 @@ export default function SessionDetails(props: {
 					/>
 					<div className="flex flex-row gap-4">
 						<button
-							className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
+							className={`bg-gray-500 hover:bg-gray-800 ${buttonClass}`}
 							onClick={() => props.setIsOpen(false)}
 						>
 							Close
+						</button>
+						<button
+							className={`bg-red-500 hover:bg-red-800 ${buttonClass}`}
+							onClick={() => {
+								props.session.delete(), props.setIsOpen(false);
+							}}
+						>
+							Delete Session
 						</button>
 					</div>
 				</div>
 			</Dialog.Panel>
 		</Dialog>
+	);
+}
+
+const sessionTypes = [
+	{ id: 1, name: "Keynote", value: "keynote" },
+	{ id: 2, name: "Panel", value: "panel" },
+	{ id: 3, name: "Session", value: "session" },
+	{ id: 4, name: "Workshop", value: "workshop" },
+];
+
+function TypeList(props: { session: Session }): JSX.Element {
+	const [selectedSessionType, setSelectedSessionType] = useState(
+		sessionTypes[sessionTypes.findIndex((x) => x.value === props.session.sessionType)],
+	);
+
+	// Set the session type to the selected value
+	useEffect(() => {
+		props.session.updateSessionType(
+			selectedSessionType.value as "session" | "keynote" | "panel" | "workshop",
+		);
+	}, [selectedSessionType]);
+
+	return (
+		<Listbox value={selectedSessionType} onChange={setSelectedSessionType}>
+			<div className="relative mb-2">
+				<Listbox.Button className="relative w-full cursor-pointer resize-none border-2 border-gray-500 bg-white p-2 text-black text-left focus:outline-none">
+					<span className="block truncate">{selectedSessionType.name}</span>
+				</Listbox.Button>
+				<Transition
+					as={Fragment}
+					leave="transition ease-in duration-100"
+					leaveFrom="opacity-100"
+					leaveTo="opacity-0"
+				>
+					<Listbox.Options className="absolute shadow-lg max-h-60 w-full overflow-auto border-2 border-gray-500 bg-white p-2 mt-1 text-black text-left">
+						{sessionTypes.map((sessionTypes) => (
+							<Listbox.Option
+								key={sessionTypes.id}
+								className={"relative cursor-pointer select-none text-black"}
+								value={sessionTypes}
+							>
+								{sessionTypes.name}
+							</Listbox.Option>
+						))}
+					</Listbox.Options>
+				</Transition>
+			</div>
+		</Listbox>
 	);
 }

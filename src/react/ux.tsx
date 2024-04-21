@@ -16,7 +16,7 @@ import Prompt from "./prompt_ux.js";
 import { UserAvatars } from "./avatars_ux.js";
 
 export function ReactApp(props: {
-	items: TreeView<typeof Conference>;
+	conferenceTree: TreeView<typeof Conference>;
 	sessionTree: TreeView<typeof ClientSession>;
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
@@ -38,7 +38,7 @@ export function ReactApp(props: {
 		<>
 			<div
 				id="main"
-				className="flex flex-col bg-transparent h-screen w-full overflow-hidden overscroll-none"
+				className="flex flex-col bg-gray-100 h-screen w-full overflow-hidden overscroll-none"
 			>
 				<Header
 					saved={saved}
@@ -48,7 +48,7 @@ export function ReactApp(props: {
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
-						conferenceTree={props.items}
+						conferenceTree={props.conferenceTree}
 						sessionTree={props.sessionTree}
 						audience={props.audience}
 						container={props.container}

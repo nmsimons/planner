@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Days, Session } from "../schema/app_schema.js";
+import { Conference, Days } from "../schema/app_schema.js";
 import { findSession } from "../utils/app_helpers.js";
 import {
 	ThumbLikeFilled,
@@ -232,10 +232,14 @@ export function ButtonGroup(props: { children: React.ReactNode }): JSX.Element {
 	return <div className="flex flex-intial items-center">{props.children}</div>;
 }
 
+export function Divider(): JSX.Element {
+	return <div className="border-r border-gray-400 border-1 h-6"></div>;
+}
+
 export function Floater(props: { children: React.ReactNode }): JSX.Element {
 	return (
 		<div className="transition transform absolute z-[1000] bottom-4 inset-x-0 pb-2 sm:pb-5 opacity-100 scale-100 translate-y-0 ease-out duration-500 text-white">
-			<div className="max-w-screen-lg mx-auto px-2 sm:px-4">
+			<div className="max-w-screen-md mx-auto px-2 sm:px-4">
 				<div className="p-2 rounded-lg bg-black shadow-lg sm:p-3">
 					<div className="flex flex-row items-center justify-between flex-wrap">
 						{props.children}
