@@ -287,11 +287,13 @@ function SessionTypeLabel(props: { session: Session }): JSX.Element {
 	return (
 		<div
 			className={
-				"absolute bottom-2 right-2 h-4 w-4 rounded-full overflow-hidden text-center text-xs font-bold text-white align-middle " +
+				"absolute -bottom-2 -right-2 h-6 w-6 rounded-full overflow-hidden shadow-md hover:shadow-lg " +
 				color
 			}
 		>
-			{props.session.sessionType.substring(0, 1).toLocaleUpperCase()}
+			<div className="absolute inset-0 text-center font-bold text-white text-sm">
+				{props.session.sessionType.substring(0, 1).toLocaleUpperCase()}
+			</div>
 		</div>
 	);
 }
