@@ -7,7 +7,7 @@ export default function Prompt(props: {
 	insertTemplate: (prompt: string) => Promise<void>;
 }): JSX.Element {
 	const [templatePrompt, setTemplatePrompt] = useState(
-		"Generate 10 sessions ideas for a conference on AI. Include 2 keynotes, 4 workshops, and 4 panels.",
+		"Generate 10 session ideas for a conference on AI. Include 2 keynotes, 4 workshops, and 4 panels.",
 	);
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 	return (

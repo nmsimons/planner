@@ -23,6 +23,7 @@ export class Session extends sf.object(
 		id: sf.string,
 		title: sf.string,
 		abstract: sf.string,
+		sessionType: sf.string,
 		created: sf.number,
 		lastChanged: sf.number,
 	},
@@ -39,6 +40,12 @@ export class Session extends sf.object(
 		this.abstract = text;
 	}
 
+	// Update the session type and also update the timestamp
+	public updateSessionType(type: keyof typeof SessionType) {
+		this.lastChanged = new Date().getTime();
+		this.sessionType = type;
+	}
+
 	/**
 	 * Removes a node from its parent.
 	 */
@@ -52,6 +59,13 @@ export class Session extends sf.object(
 	}
 }
 
+const SessionType = {
+	session: "Session",
+	workshop: "Workshop",
+	panel: "Panel",
+	keynote: "Keynote",
+};
+
 export class Sessions extends sf.array("Sessions", Session) {
 	// Add a session to the conference
 	public addSession() {
@@ -60,6 +74,7 @@ export class Sessions extends sf.array("Sessions", Session) {
 			id: uuid(),
 			title: "New Session",
 			abstract: "New Abstract",
+			sessionType: "session",
 			created: currentTime,
 			lastChanged: currentTime,
 		});

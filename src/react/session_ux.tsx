@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { Conference, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
@@ -12,8 +12,8 @@ import { ConnectableElement, useDrag, useDrop } from "react-dnd";
 import { useTransition } from "react-transition-state";
 import { Tree } from "fluid-framework";
 import { ClientSession } from "../schema/session_schema.js";
-import { DragFilled } from "@fluentui/react-icons";
-import { Dialog } from "@headlessui/react";
+import { CheckFilled, ChevronUpDownFilled, DragFilled } from "@fluentui/react-icons";
+import { Dialog, Listbox, Transition } from "@headlessui/react";
 import { ShowDetailsButton } from "./button_ux.js";
 
 export function RootSessionWrapper(props: {
@@ -206,6 +206,7 @@ export function SessionView(props: {
 						setIsDetailsShowing={props.setIsDetailsShowing}
 					/>
 					<SessionTitle session={props.session} update={update} />
+					<SessionTypeLabel session={props.session} />
 					<RemoteSelection show={remoteSelected} />
 				</div>
 			</div>
@@ -263,6 +264,38 @@ function SessionToolbar(props: {
 	);
 }
 
+function SessionTypeLabel(props: { session: Session }): JSX.Element {
+	const sessionType = props.session.sessionType;
+	let color = "";
+	switch (sessionType) {
+		case "keynote":
+			color = "bg-red-500";
+			break;
+		case "panel":
+			color = "bg-blue-500";
+			break;
+		case "session":
+			color = "bg-green-500";
+			break;
+		case "workshop":
+			color = "bg-yellow-500";
+			break;
+		default:
+			color = "bg-gray-500";
+	}
+
+	return (
+		<div
+			className={
+				"absolute bottom-2 right-2 h-4 w-4 rounded-full overflow-hidden text-center text-xs font-bold text-white align-middle " +
+				color
+			}
+		>
+			{props.session.sessionType.substring(0, 1).toLocaleUpperCase()}
+		</div>
+	);
+}
+
 export default function SessionDetails(props: {
 	isOpen: boolean;
 	setIsOpen: (arg: boolean) => void;
@@ -275,19 +308,20 @@ export default function SessionDetails(props: {
 			onClose={() => props.setIsOpen(false)}
 		>
 			<Dialog.Panel className="w-full text-left align-middle">
-				<Dialog.Title className="font-bold text-lg">Session Details</Dialog.Title>
+				<Dialog.Title className="font-bold text-lg pb-1">Session Details</Dialog.Title>
 				<div>
 					<textarea
 						rows={1}
-						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+						className="resize-none border-2 mb-2 border-black bg-white p-2 text-black w-full h-full"
 						value={props.session.title}
 						onChange={(e) => {
 							props.session.updateTitle(e.target.value);
 						}}
 					/>
+					<TypeList session={props.session} />
 					<textarea
-						rows={4}
-						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+						rows={5}
+						className="resize-none border-2 mb-2 border-black bg-white p-2 text-black w-full h-full"
 						value={props.session.abstract}
 						onChange={(e) => {
 							props.session.updateAbstract(e.target.value);
@@ -304,5 +338,53 @@ export default function SessionDetails(props: {
 				</div>
 			</Dialog.Panel>
 		</Dialog>
+	);
+}
+
+const sessionTypes = [
+	{ id: 1, name: "Keynote", value: "keynote" },
+	{ id: 2, name: "Panel", value: "panel" },
+	{ id: 3, name: "Session", value: "session" },
+	{ id: 4, name: "Workshop", value: "workshop" },
+];
+
+function TypeList(props: { session: Session }): JSX.Element {
+	const [selectedSessionType, setSelectedSessionType] = useState(
+		sessionTypes[sessionTypes.findIndex((x) => x.value === props.session.sessionType)],
+	);
+
+	// Set the session type to the selected value
+	useEffect(() => {
+		props.session.updateSessionType(
+			selectedSessionType.value as "session" | "keynote" | "panel" | "workshop",
+		);
+	}, [selectedSessionType]);
+
+	return (
+		<Listbox value={selectedSessionType} onChange={setSelectedSessionType}>
+			<div className="relative my-2">
+				<Listbox.Button className="relative w-full cursor-pointer resize-none border-2 border-black bg-white p-2 text-black text-left focus:outline-none">
+					<span className="block truncate">{selectedSessionType.name}</span>
+				</Listbox.Button>
+				<Transition
+					as={Fragment}
+					leave="transition ease-in duration-100"
+					leaveFrom="opacity-100"
+					leaveTo="opacity-0"
+				>
+					<Listbox.Options className="absolute shadow-lg max-h-60 w-full overflow-auto border-2 border-black bg-white p-2 mt-1 text-black text-left">
+						{sessionTypes.map((sessionTypes) => (
+							<Listbox.Option
+								key={sessionTypes.id}
+								className={"relative cursor-pointer select-none text-black"}
+								value={sessionTypes}
+							>
+								{sessionTypes.name}
+							</Listbox.Option>
+						))}
+					</Listbox.Options>
+				</Transition>
+			</div>
+		</Listbox>
 	);
 }
