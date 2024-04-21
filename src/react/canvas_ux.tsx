@@ -25,6 +25,7 @@ import {
 	RedoButton,
 	DeleteDayButton,
 	ShowPromptButton,
+	Divider,
 } from "./button_ux.js";
 import { undefinedUserId } from "../utils/utils.js";
 import { undoRedo } from "../utils/undo.js";
@@ -113,11 +114,6 @@ export function Canvas(props: {
 						conference={props.conferenceTree.root}
 						clientId={props.currentUser}
 					/>
-					<DeleteSessionsButton
-						session={props.sessionTree.root}
-						conference={props.conferenceTree.root}
-						clientId={props.currentUser}
-					/>
 					<NewDayButton
 						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
@@ -128,8 +124,12 @@ export function Canvas(props: {
 						session={props.sessionTree.root}
 						clientId={props.currentUser}
 					/>
+				</ButtonGroup>
+				<Divider />
+				<ButtonGroup>
 					<ShowPromptButton show={props.setShowPrompt} />
 				</ButtonGroup>
+				<Divider />
 				<ButtonGroup>
 					<UndoButton undo={() => props.undoRedo.undo()} />
 					<RedoButton redo={() => props.undoRedo.redo()} />

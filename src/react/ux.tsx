@@ -37,7 +37,7 @@ export function ReactApp(props: {
 		<>
 			<div
 				id="main"
-				className="flex flex-col bg-transparent h-screen w-full overflow-hidden overscroll-none"
+				className="flex flex-col bg-gray-100 h-screen w-full overflow-hidden overscroll-none"
 			>
 				<Header
 					saved={saved}

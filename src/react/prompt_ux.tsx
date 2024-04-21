@@ -7,12 +7,12 @@ export default function Prompt(props: {
 	insertTemplate: (prompt: string) => Promise<void>;
 }): JSX.Element {
 	const [templatePrompt, setTemplatePrompt] = useState(
-		"Generate 10 session ideas for a conference on AI. Include 2 keynotes, 4 workshops, and 4 panels.",
+		"Generate 12 session ideas for a conference on AI. Include 2 keynotes, 4 workshops, 4 regular sessions, and 2 panels.",
 	);
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 	return (
 		<Dialog
-			className="absolute border-2 border-black bg-white p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
+			className="absolute rounded bg-blue-200 p-4 w-[500px] h-fit m-auto left-0 right-0 top-0 bottom-0 z-50 drop-shadow-xl"
 			open={props.isOpen}
 			onClose={() => props.setIsOpen(false)}
 		>
@@ -21,12 +21,12 @@ export default function Prompt(props: {
 				<Dialog.Description>
 					{isLoadingTemplate
 						? "Generating template..."
-						: "Populate your conference with session ideas based on this prompt."}
+						: "Generate session ideas based on this prompt."}
 				</Dialog.Description>
 				<div className={isLoadingTemplate ? "invisible" : ""}>
 					<textarea
 						rows={4}
-						className="resize-none border-2 border-black bg-white p-2 my-2 text-black w-full h-full"
+						className="resize-none border-2 border-gray-500 bg-white p-2 my-2 text-black w-full h-full"
 						value={templatePrompt}
 						id="insertTemplateInput"
 						aria-label="Describe the template to be inserted"
@@ -52,7 +52,7 @@ export default function Prompt(props: {
 							className="bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded"
 							onClick={() => props.setIsOpen(false)}
 						>
-							Close
+							Cancel
 						</button>
 					</div>
 				</div>
