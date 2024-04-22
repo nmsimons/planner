@@ -23,17 +23,28 @@ export function UserAvatars(props: {
 	fluidMembers: IMember[];
 	layoutType: "spread" | "stack" | "pie" | undefined;
 }): JSX.Element {
+	const classes = avatarClasses();
 	let isAzureUser = false;
 
-	// Test the type of fluidMembers to see if it is an AzureMember in a try-catch block
+	// Test to see if the fluidMembers array is empty
+	// If it is empty, return an empty AvatarGroup
+	if (props.fluidMembers.length === 0) {
+		return (
+			<FluentProvider theme={webLightTheme} className={classes.avatars}>
+				<AvatarGroup
+					size={32}
+					className="pl-2 pr-2"
+					layout={props.layoutType}
+				></AvatarGroup>
+			</FluentProvider>
+		);
+	}
+
+	// Test the type of fluidMembers to see if it is an AzureMember
 	// If it is an AzureMember, set isAzureUser to true
 	// Otherwise, set isAzureUser to false
-	try {
-		if ((props.fluidMembers[0] as AzureMember).userName !== undefined) {
-			isAzureUser = true;
-		}
-	} catch (e) {
-		isAzureUser = false;
+	if ((props.fluidMembers[0] as AzureMember).userName !== undefined) {
+		isAzureUser = true;
 	}
 
 	// Remove the currentUser from the fluidMembers array based on userId
@@ -53,8 +64,6 @@ export function UserAvatars(props: {
 			return (member as OdspMember).name;
 		}
 	};
-
-	const classes = avatarClasses();
 
 	return (
 		<FluentProvider theme={webLightTheme} className={classes.avatars}>
