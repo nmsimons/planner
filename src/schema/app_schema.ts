@@ -84,7 +84,7 @@ export class Sessions extends sf.array("Sessions", Session) {
 }
 
 export class Days extends sf.array("Days", Sessions) {
-	// Add a day to the conference with a number as its key
+	// Add a day to the conference
 	public addDay(): Sessions {
 		const day = new Sessions([]);
 		this.insertAtEnd(day);
