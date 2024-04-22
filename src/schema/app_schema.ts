@@ -123,7 +123,15 @@ export class Conference extends sf.object("Conference", {
 	sessions: Sessions,
 	days: Days,
 	sessionsPerDay: sf.number,
-}) {}
+}) {
+	// Clear all the sessions from the conference
+	public clear() {
+		Tree.runTransaction<Conference>(this, () => {
+			if (this.sessions.length > 0) this.sessions.removeRange();
+			if (this.days.length > 0) this.days.removeRange();
+		});
+	}
+}
 
 // Export the tree config appropriate for this schema.
 // This is passed into the SharedTree when it is initialized.

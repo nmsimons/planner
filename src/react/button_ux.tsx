@@ -83,30 +83,20 @@ export function NewSessionButton(props: { conference: Conference; clientId: stri
 }
 
 export function DeleteSessionsButton(props: {
-	session: ClientSession;
 	conference: Conference;
 	clientId: string;
 }): JSX.Element {
 	const handleClick = () => {
-		// Wrap the delete operation in a transaction as it potentially modifies multiple nodes
-		// and we want to ensure that the operation is atomic. This ensures that the revertible of
-		// the operation will undo all the changes made by the operation.
-		Tree.runTransaction(props.conference, () => {
-			const ids = getSelectedSessions(props.session, props.clientId);
-			for (const i of ids) {
-				const n = findSession(props.conference, i);
-				n?.delete();
-			}
-		});
+		props.conference.clear();
 	};
 	return (
 		<IconButton
 			color="white"
-			background="black"
+			background="red"
 			handleClick={() => handleClick()}
 			icon={<DeleteRegular />}
 		>
-			Delete Session
+			Clear
 		</IconButton>
 	);
 }

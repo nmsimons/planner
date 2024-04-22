@@ -7,7 +7,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import { loadFluidData } from "./infra/fluid.js";
-import { notesContainerSchema } from "./schema/containerSchema.js";
+import { notesContainerSchema } from "./schema/container_schema.js";
 import { ReactApp } from "./react/ux.js";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";

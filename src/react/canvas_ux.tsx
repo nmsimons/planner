@@ -25,6 +25,7 @@ import {
 	DeleteDayButton,
 	ShowPromptButton,
 	Divider,
+	DeleteSessionsButton,
 } from "./button_ux.js";
 import { undoRedo } from "../utils/undo.js";
 import { SessionsView } from "./sessions_ux.js";
@@ -120,6 +121,13 @@ export function Canvas(props: {
 					<DeleteDayButton
 						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
+						clientId={clientId}
+					/>
+				</ButtonGroup>
+				<Divider />
+				<ButtonGroup>
+					<DeleteSessionsButton
+						conference={props.conferenceTree.root}
 						clientId={clientId}
 					/>
 				</ButtonGroup>
