@@ -3,6 +3,7 @@
  * Licensed under the MIT License.
  */
 
+import { IMember } from "fluid-framework";
 import { Session } from "../schema/app_schema.js";
 import { ClientSession, Client } from "../schema/session_schema.js";
 import { selectAction, undefinedUserId } from "./utils.js";
@@ -13,7 +14,7 @@ export const testRemoteNoteSelection = (
 	clientId: string,
 	setRemoteSelected: (value: boolean) => void,
 	setSelected: (value: boolean) => void,
-	fluidMembers: string[],
+	fluidMembers: IMember[],
 ) => {
 	if (clientId == undefinedUserId) return;
 
@@ -27,7 +28,7 @@ export const testRemoteNoteSelection = (
 			}
 		}
 
-		if (c.clientId != clientId && fluidMembers.indexOf(c.clientId) != -1) {
+		if (c.clientId != clientId && fluidMembers.some((member) => member.userId === c.clientId)) {
 			if (c.selected.indexOf(item.id) != -1) {
 				remoteSelected = true;
 			}

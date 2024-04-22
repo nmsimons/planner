@@ -19,7 +19,6 @@ import {
 	Floater,
 	NewDayButton,
 	NewSessionButton,
-	DeleteSessionsButton,
 	ButtonGroup,
 	UndoButton,
 	RedoButton,
@@ -36,13 +35,13 @@ export function Canvas(props: {
 	sessionTree: TreeView<typeof ClientSession>;
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 	currentUser: string;
 	undoRedo: undoRedo;
 	setCurrentUser: (arg: string) => void;
 	setConnectionState: (arg: string) => void;
 	setSaved: (arg: boolean) => void;
-	setFluidMembers: (arg: string[]) => void;
+	setFluidMembers: (arg: IMember[]) => void;
 	setShowPrompt: (arg: boolean) => void;
 }): JSX.Element {
 	const [invalidations, setInvalidations] = useState(0);
@@ -90,7 +89,7 @@ export function Canvas(props: {
 				props.setCurrentUser(user);
 			}
 		}
-		props.setFluidMembers(Array.from(props.audience.getMembers().keys()));
+		props.setFluidMembers(Array.from(props.audience.getMembers()).map(([_, member]) => member));
 	};
 
 	useEffect(() => {
@@ -143,7 +142,7 @@ export function ConferenceView(props: {
 	conference: Conference;
 	clientId: string;
 	clientSession: ClientSession;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 }): JSX.Element {
 	const sessionArray = [];
 	for (const i of props.conference.sessions) {
@@ -177,7 +176,7 @@ export function DaysView(props: {
 	conference: Conference;
 	clientId: string;
 	clientSession: ClientSession;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 }): JSX.Element {
 	const dayArray = [];
 	for (const day of props.conference.days) {

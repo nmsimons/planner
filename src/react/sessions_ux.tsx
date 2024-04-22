@@ -9,14 +9,14 @@ import { moveItem } from "../utils/app_helpers.js";
 import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
 import { ClientSession } from "../schema/session_schema.js";
-import { Tree } from "fluid-framework";
+import { IMember, Tree } from "fluid-framework";
 import { RootSessionWrapper } from "./session_ux.js";
 
 export function SessionsView(props: {
 	sessions: Sessions;
 	clientId: string;
 	clientSession: ClientSession;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 	title: string;
 }): JSX.Element {
 	const [{ isOver, canDrop }, drop] = useDrop(() => ({
@@ -126,7 +126,7 @@ function SessionsViewContent(props: {
 	sessions: Sessions;
 	clientId: string;
 	clientSession: ClientSession;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 }): JSX.Element {
 	const sessionsArray = [];
 	for (const s of props.sessions) {

@@ -26,7 +26,7 @@ export function ReactApp(props: {
 	const [currentUser, setCurrentUser] = useState(undefinedUserId);
 	const [connectionState, setConnectionState] = useState("");
 	const [saved, setSaved] = useState(false);
-	const [fluidMembers, setFluidMembers] = useState<string[]>([]);
+	const [fluidMembers, setFluidMembers] = useState<IMember[]>([]);
 	const [isPromptOpen, setIsPromptOpen] = useState(false);
 
 	/** Unsubscribe to undo-redo events when the component unmounts */
@@ -75,16 +75,15 @@ export function ReactApp(props: {
 export function Header(props: {
 	saved: boolean;
 	connectionState: string;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 	clientId: string;
 }): JSX.Element {
 	return (
 		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full">
-			<div className="flex m-2">Planner</div>
-			<div className="flex m-2 items-center">
-				{props.saved ? "saved" : "not saved"} | {props.connectionState} |
-				<UserAvatars fluidMembers={props.fluidMembers} layoutType="spread" />
+			<div className="flex m-2">
+				Planner | {props.saved ? "saved" : "not saved"} | {props.connectionState}
 			</div>
+			<UserAvatars fluidMembers={props.fluidMembers} layoutType="spread" />
 		</div>
 	);
 }

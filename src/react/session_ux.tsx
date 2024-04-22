@@ -10,7 +10,7 @@ import { dragType, selectAction } from "../utils/utils.js";
 import { testRemoteNoteSelection, updateRemoteNoteSelection } from "../utils/session_helpers.js";
 import { ConnectableElement, useDrag, useDrop } from "react-dnd";
 import { useTransition } from "react-transition-state";
-import { Tree } from "fluid-framework";
+import { IMember, Tree } from "fluid-framework";
 import { ClientSession } from "../schema/session_schema.js";
 import { DragFilled } from "@fluentui/react-icons";
 import { Dialog, Listbox, Transition } from "@headlessui/react";
@@ -20,7 +20,7 @@ export function RootSessionWrapper(props: {
 	session: Session;
 	clientId: string;
 	clientSession: ClientSession;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 }): JSX.Element {
 	const [isDetailsOpen, setIsDetailsOpen] = useState(false);
 
@@ -40,7 +40,7 @@ export function SessionView(props: {
 	session: Session;
 	clientId: string;
 	clientSession: ClientSession;
-	fluidMembers: string[];
+	fluidMembers: IMember[];
 	setIsDetailsShowing: (arg: boolean) => void;
 }): JSX.Element {
 	const mounted = useRef(false);
