@@ -89,6 +89,7 @@ export function Canvas(props: {
 				props.setCurrentUser(user);
 			}
 		}
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		props.setFluidMembers(Array.from(props.audience.getMembers()).map(([_, member]) => member));
 	};
 
