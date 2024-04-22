@@ -19,6 +19,7 @@ const avatarClasses = makeStyles({
 });
 
 export function UserAvatars(props: {
+	currentUser: IMember | undefined;
 	fluidMembers: IMember[];
 	layoutType: "spread" | "stack" | "pie" | undefined;
 }): JSX.Element {
@@ -35,8 +36,14 @@ export function UserAvatars(props: {
 		isAzureUser = false;
 	}
 
+	// Remove the currentUser from the fluidMembers array based on userId
+	// This is done to prevent the currentUser from appearing in the AvatarGroup
+	const filteredMembers = props.fluidMembers.filter(
+		(member) => member.userId !== props.currentUser?.userId,
+	);
+
 	const { inlineItems, overflowItems } = partitionAvatarGroupItems({
-		items: props.fluidMembers as AzureMember[],
+		items: filteredMembers,
 	});
 
 	const getUserName = (member: IMember, isAzureUser: boolean) => {

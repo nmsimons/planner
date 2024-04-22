@@ -11,7 +11,6 @@ import "../output.css";
 import { IFluidContainer, IMember, IServiceAudience, TreeView } from "fluid-framework";
 import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
-import { undefinedUserId } from "../utils/utils.js";
 import Prompt from "./prompt_ux.js";
 import { UserAvatars } from "./avatars_ux.js";
 
@@ -23,7 +22,7 @@ export function ReactApp(props: {
 	undoRedo: undoRedo;
 	insertTemplate: (prompt: string) => Promise<void>;
 }): JSX.Element {
-	const [currentUser, setCurrentUser] = useState(undefinedUserId);
+	const [currentUser, setCurrentUser] = useState<IMember | undefined>(undefined);
 	const [connectionState, setConnectionState] = useState("");
 	const [saved, setSaved] = useState(false);
 	const [fluidMembers, setFluidMembers] = useState<IMember[]>([]);
@@ -44,7 +43,7 @@ export function ReactApp(props: {
 					saved={saved}
 					connectionState={connectionState}
 					fluidMembers={fluidMembers}
-					clientId={currentUser}
+					currentUser={currentUser}
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
@@ -76,14 +75,18 @@ export function Header(props: {
 	saved: boolean;
 	connectionState: string;
 	fluidMembers: IMember[];
-	clientId: string;
+	currentUser: IMember | undefined;
 }): JSX.Element {
 	return (
 		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full">
 			<div className="flex m-2">
 				Planner | {props.saved ? "saved" : "not saved"} | {props.connectionState}
 			</div>
-			<UserAvatars fluidMembers={props.fluidMembers} layoutType="spread" />
+			<UserAvatars
+				currentUser={props.currentUser}
+				fluidMembers={props.fluidMembers}
+				layoutType="stack"
+			/>
 		</div>
 	);
 }

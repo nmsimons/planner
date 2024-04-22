@@ -26,7 +26,6 @@ import {
 	ShowPromptButton,
 	Divider,
 } from "./button_ux.js";
-import { undefinedUserId } from "../utils/utils.js";
 import { undoRedo } from "../utils/undo.js";
 import { SessionsView } from "./sessions_ux.js";
 
@@ -36,9 +35,9 @@ export function Canvas(props: {
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
 	fluidMembers: IMember[];
-	currentUser: string;
+	currentUser: IMember | undefined;
 	undoRedo: undoRedo;
-	setCurrentUser: (arg: string) => void;
+	setCurrentUser: (arg: IMember) => void;
 	setConnectionState: (arg: string) => void;
 	setSaved: (arg: boolean) => void;
 	setFluidMembers: (arg: IMember[]) => void;
@@ -83,9 +82,9 @@ export function Canvas(props: {
 		if (props.audience.getMyself()?.userId == undefined) return;
 		if (props.audience.getMembers() == undefined) return;
 		if (props.container.connectionState !== ConnectionState.Connected) return;
-		if (props.currentUser == undefinedUserId) {
-			const user = props.audience.getMyself()?.userId;
-			if (typeof user === "string") {
+		if (props.currentUser === undefined) {
+			const user = props.audience.getMyself();
+			if (user !== undefined) {
 				props.setCurrentUser(user);
 			}
 		}
@@ -100,29 +99,28 @@ export function Canvas(props: {
 		};
 	}, []);
 
+	const clientId = props.currentUser?.userId ?? "";
+
 	return (
 		<div className="relative flex grow-0 h-full w-full bg-transparent">
 			<ConferenceView
 				conference={props.conferenceTree.root}
-				clientId={props.currentUser}
+				clientId={clientId}
 				clientSession={props.sessionTree.root}
 				fluidMembers={props.fluidMembers}
 			/>
 			<Floater>
 				<ButtonGroup>
-					<NewSessionButton
-						conference={props.conferenceTree.root}
-						clientId={props.currentUser}
-					/>
+					<NewSessionButton conference={props.conferenceTree.root} clientId={clientId} />
 					<NewDayButton
 						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
-						clientId={props.currentUser}
+						clientId={clientId}
 					/>
 					<DeleteDayButton
 						days={props.conferenceTree.root.days}
 						session={props.sessionTree.root}
-						clientId={props.currentUser}
+						clientId={clientId}
 					/>
 				</ButtonGroup>
 				<Divider />
