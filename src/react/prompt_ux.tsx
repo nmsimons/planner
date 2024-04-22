@@ -6,9 +6,7 @@ export default function Prompt(props: {
 	setIsOpen: (arg: boolean) => void;
 	insertTemplate: (prompt: string) => Promise<void>;
 }): JSX.Element {
-	const [templatePrompt, setTemplatePrompt] = useState(
-		"Generate 12 session ideas for a conference on AI. Include 2 keynotes, 4 workshops, 4 regular sessions, and 2 panels.",
-	);
+	const [templatePrompt, setTemplatePrompt] = useState("");
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 	const buttonClass = "bg-gray-500 hover:bg-gray-800 text-white font-bold py-2 px-4 rounded";
 	return (
