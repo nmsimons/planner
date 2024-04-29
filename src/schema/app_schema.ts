@@ -26,6 +26,7 @@ export class Session extends sf.object(
 		sessionType: sf.string,
 		created: sf.number,
 		lastChanged: sf.number,
+		randomArray: sf.array(sf.number),
 	},
 ) {
 	// Update the title text and also update the timestamp
@@ -77,8 +78,13 @@ export class Sessions extends sf.array("Sessions", Session) {
 			sessionType: "session",
 			created: currentTime,
 			lastChanged: currentTime,
+			randomArray: [Math.random(), Math.random(), Math.random()],
 		});
-		this.insertAtEnd(session);
+		if (this.length > 3) {
+			this.insertAt(2, session);
+		} else {
+			this.insertAtEnd(session);
+		}
 		return session;
 	}
 }

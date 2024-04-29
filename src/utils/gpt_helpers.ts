@@ -134,6 +134,7 @@ export function createSessionPrompter(): (
 					sessionType: l.sessionType,
 					lastChanged: currentTime,
 					id: uuid(),
+					randomArray: [Math.random(), Math.random(), Math.random()],
 				});
 			});
 			return sessions;

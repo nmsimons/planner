@@ -51,7 +51,7 @@ export function Canvas(props: {
 	// For more complex apps, this code can be included
 	// on lower level components.
 	useEffect(() => {
-		const unsubscribe = Tree.on(props.conferenceTree.root, "treeChanged", () => {
+		const unsubscribe = Tree.on(props.conferenceTree.root, "nodeChanged", () => {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
@@ -185,6 +185,17 @@ export function DaysView(props: {
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
 }): JSX.Element {
+	// listen for changes to the Days object
+	const [changed, setChanged] = useState(0);
+
+	// useEffect to update the changed state when the session object changes
+	useEffect(() => {
+		const handler = () => {
+			setChanged(changed + Math.random());
+		};
+		return Tree.on(props.conference.days, "nodeChanged", handler);
+	}, []);
+
 	const dayArray = [];
 	for (const day of props.conference.days) {
 		dayArray.push(

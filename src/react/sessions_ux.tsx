@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Conference, Days, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { ConnectableElement, useDrop } from "react-dnd";
@@ -19,6 +19,17 @@ export function SessionsView(props: {
 	fluidMembers: IMember[];
 	title: string;
 }): JSX.Element {
+	// listen for changes to the Sessions object
+	const [changed, setChanged] = useState(0);
+
+	// useEffect to update the changed state when the Sessions object changes
+	useEffect(() => {
+		const handler = () => {
+			setChanged(changed + Math.random());
+		};
+		return Tree.on(props.sessions, "nodeChanged", handler);
+	}, []);
+
 	const [{ isOver, canDrop }, drop] = useDrop(() => ({
 		accept: [dragType.SESSION],
 		collect: (monitor) => ({
