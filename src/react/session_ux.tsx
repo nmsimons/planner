@@ -196,9 +196,8 @@ export function SessionView(props: {
 			onDoubleClick={(e) => {
 				e.stopPropagation(), props.setIsDetailsShowing(true);
 			}}
-			className={`transition duration-500${
-				status === "exiting" ? " transform ease-out scale-110" : ""
-			}`}
+			className={`transition duration-500${status === "exiting" ? " transform ease-out scale-110" : ""
+				}`}
 		>
 			<div
 				ref={attachRef}
@@ -260,14 +259,15 @@ function SessionTitle(props: {
 	};
 
 	const randomArray = [];
-	for (const s of props.session.randomArray) {
+	for (const s of props.session.blocks) {
 		randomArray.push(
 			<div
 				// get index of s in randomArray
 				// and use it as key
-				key={props.session.randomArray.indexOf(s)}
+				key={props.session.blocks.indexOf(s)}
 			>
-				{s}
+				{`${s.numberA}_${s.numberB}`}
+				{`${s.items[0]?.numberC}`}
 			</div>,
 		);
 	}

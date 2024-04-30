@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import { TreeConfiguration, SchemaFactory, Tree } from "fluid-framework";
+import { TreeConfiguration, SchemaFactory, Tree, TreeStatus } from "fluid-framework";
 import { v4 as uuid } from "uuid";
 
 // Schema is defined using a factory object that generates classes for objects as well
@@ -11,6 +11,19 @@ import { v4 as uuid } from "uuid";
 
 // Include a UUID to guarantee that this schema will be uniquely identifiable.
 const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
+
+export class Item extends sf.object('Item', {
+	numberC: sf.number
+}) {
+}
+
+export class Block extends sf.object('Block', {
+	numberA: sf.number,
+	numberB: sf.number,
+	items: sf.array('Items', Item),
+}) {
+
+}
 
 // Define the schema for the session object.
 // Helper functions for working with the data contained in this object
@@ -26,7 +39,7 @@ export class Session extends sf.object(
 		sessionType: sf.string,
 		created: sf.number,
 		lastChanged: sf.number,
-		randomArray: sf.array(sf.number),
+		blocks: sf.array(Block),
 	},
 ) {
 	// Update the title text and also update the timestamp
@@ -68,17 +81,48 @@ const SessionType = {
 };
 
 export class Sessions extends sf.array("Sessions", Session) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	public constructor(data: any) {
+		super(data);
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const n = this;
+
+		window.setTimeout(() => {
+			Tree.on(n, 'nodeChanged', () => {
+				// eslint-disable-next-line no-console
+				console.log(n.map(s => s.title));
+				// eslint-disable-next-line no-debugger
+				debugger;
+			});
+		});
+	}
+
 	// Add a session to the conference
 	public addSession() {
 		const currentTime = new Date().getTime();
 		const session = new Session({
 			id: uuid(),
-			title: "New Session",
+			title: "New Session_" + Math.random(),
 			abstract: "New Abstract",
 			sessionType: "session",
 			created: currentTime,
 			lastChanged: currentTime,
-			randomArray: [Math.random(), Math.random(), Math.random()],
+			blocks: [
+				{
+					numberA: Math.random(),
+					numberB: Math.random(),
+					items: [],
+				},
+				{
+					numberA: Math.random(),
+					numberB: Math.random(),
+					items: [],
+				}, {
+					numberA: Math.random(),
+					numberB: Math.random(),
+					items: [],
+				}
+			],
 		});
 		if (this.length > 3) {
 			this.insertAt(2, session);
@@ -90,6 +134,36 @@ export class Sessions extends sf.array("Sessions", Session) {
 }
 
 export class Days extends sf.array("Days", Sessions) {
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	public constructor(data: any) {
+		super(data);
+
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const n = this;
+
+		window.setTimeout(() => {
+			if (Tree.status(n) === TreeStatus.InDocument) {
+				Tree.on(n, 'treeChanged', () => {
+					// Walt through the tree to trigger the issue.
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
+					let a: any;
+
+					n.forEach(sessions => {
+						sessions.forEach(session => {
+							a = session;
+
+							session.blocks.forEach(block => {
+								a = block.items[0];
+								a = block.numberA;
+								a = block.numberB;
+							});
+						});
+					});
+				});
+			}
+		}, 2000);
+	}
+
 	// Add a day to the conference
 	public addDay(): Sessions {
 		const day = new Sessions([]);
