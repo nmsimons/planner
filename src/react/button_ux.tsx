@@ -67,7 +67,12 @@ export function DeleteDayButton(props: {
 export function NewSessionButton(props: { conference: Conference; clientId: string }): JSX.Element {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		props.conference.sessions.addSession();
+
+		if (props.conference.days[0]) {
+			props.conference.days[0].addSession();
+		} else {
+			props.conference.sessions.addSession();
+		}
 	};
 
 	return (
