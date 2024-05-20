@@ -196,8 +196,9 @@ export function SessionView(props: {
 			onDoubleClick={(e) => {
 				e.stopPropagation(), props.setIsDetailsShowing(true);
 			}}
-			className={`transition duration-500${status === "exiting" ? " transform ease-out scale-110" : ""
-				}`}
+			className={`transition duration-500${
+				status === "exiting" ? " transform ease-out scale-110" : ""
+			}`}
 		>
 			<div
 				ref={attachRef}

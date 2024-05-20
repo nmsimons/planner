@@ -12,18 +12,15 @@ import { v4 as uuid } from "uuid";
 // Include a UUID to guarantee that this schema will be uniquely identifiable.
 const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
 
-export class Item extends sf.object('Item', {
-	numberC: sf.number
-}) {
-}
+export class Item extends sf.object("Item", {
+	numberC: sf.number,
+}) {}
 
-export class Block extends sf.object('Block', {
+export class Block extends sf.object("Block", {
 	numberA: sf.number,
 	numberB: sf.number,
-	items: sf.array('Items', Item),
-}) {
-
-}
+	items: sf.array("Items", Item),
+}) {}
 
 // Define the schema for the session object.
 // Helper functions for working with the data contained in this object
@@ -88,11 +85,11 @@ export class Sessions extends sf.array("Sessions", Session) {
 		const n = this;
 
 		window.setTimeout(() => {
-			Tree.on(n, 'nodeChanged', () => {
+			Tree.on(n, "nodeChanged", () => {
 				// eslint-disable-next-line no-console
-				console.log(n.map(s => s.title));
+				console.log(n.map((s) => s.title));
 				// eslint-disable-next-line no-debugger
-				debugger;
+				// debugger;
 			});
 		});
 	}
@@ -117,11 +114,12 @@ export class Sessions extends sf.array("Sessions", Session) {
 					numberA: Math.random(),
 					numberB: Math.random(),
 					items: [],
-				}, {
+				},
+				{
 					numberA: Math.random(),
 					numberB: Math.random(),
 					items: [],
-				}
+				},
 			],
 		});
 		if (this.length > 3) {
@@ -143,16 +141,16 @@ export class Days extends sf.array("Days", Sessions) {
 
 		window.setTimeout(() => {
 			if (Tree.status(n) === TreeStatus.InDocument) {
-				Tree.on(n, 'treeChanged', () => {
+				Tree.on(n, "treeChanged", () => {
 					// Walt through the tree to trigger the issue.
 					// eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars
 					let a: any;
 
-					n.forEach(sessions => {
-						sessions.forEach(session => {
+					n.forEach((sessions) => {
+						sessions.forEach((session) => {
 							a = session;
 
-							session.blocks.forEach(block => {
+							session.blocks.forEach((block) => {
 								a = block.items[0];
 								a = block.numberA;
 								a = block.numberB;
