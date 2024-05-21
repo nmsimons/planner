@@ -134,20 +134,23 @@ export function createSessionPrompter(): (
 					sessionType: l.sessionType,
 					lastChanged: currentTime,
 					id: uuid(),
-					blocks: [{
-						numberA: Math.random(),
-						numberB: Math.random(),
-						items: [],
-					},
-					{
-						numberA: Math.random(),
-						numberB: Math.random(),
-						items: [],
-					}, {
-						numberA: Math.random(),
-						numberB: Math.random(),
-						items: [],
-					}],
+					blocks: [
+						{
+							numberA: Math.random(),
+							numberB: Math.random(),
+							items: [],
+						},
+						{
+							numberA: Math.random(),
+							numberB: Math.random(),
+							items: [],
+						},
+						{
+							numberA: Math.random(),
+							numberB: Math.random(),
+							items: [],
+						},
+					],
 				});
 			});
 			return sessions;

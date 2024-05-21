@@ -28,7 +28,7 @@ export const testRemoteNoteSelection = (
 			}
 		}
 
-		if (c.clientId != clientId && fluidMembers.some((member) => member.userId === c.clientId)) {
+		if (c.clientId != clientId && fluidMembers.some((member) => member.id === c.clientId)) {
 			if (c.selected.indexOf(item.id) != -1) {
 				remoteSelected = true;
 			}
