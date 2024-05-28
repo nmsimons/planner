@@ -24,9 +24,9 @@ export function createUndoRedoStacks(events: ISubscribable<TreeViewEvents>): und
 			return;
 		}
 		const revertible = getRevertible();
-		if (commit.kind === CommitKind.Undo) {
+		if (commit.kind === CommitKind.Undo && commit.isLocal) {
 			redoStack.push(revertible);
-		} else {
+		} else if (commit.isLocal) {
 			if (commit.kind === CommitKind.Default) {
 				// clear redo stack
 				for (const redo of redoStack) {

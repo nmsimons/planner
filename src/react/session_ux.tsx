@@ -55,7 +55,13 @@ export function SessionView(props: {
 	// useEffect to update the changed state when the session object changes
 	useEffect(() => {
 		const handler = () => {
-			setChanged(changed + Math.random());
+			const parent = Tree.parent(props.session);
+			if (Tree.is(parent, Sessions)) {
+				console.log("Parent is Sessions");
+			} else {
+				return <></>;
+			}
+			setChanged(changed + 1);
 		};
 		return Tree.on(props.session, "nodeChanged", handler);
 	}, []);
@@ -259,19 +265,6 @@ function SessionTitle(props: {
 		}
 	};
 
-	const randomArray = [];
-	for (const s of props.session.randomArray) {
-		randomArray.push(
-			<div
-				// get index of s in randomArray
-				// and use it as key
-				key={props.session.randomArray.indexOf(s)}
-			>
-				{s}
-			</div>,
-		);
-	}
-
 	return (
 		<>
 			<textarea
@@ -281,7 +274,6 @@ function SessionTitle(props: {
 				onClick={(e) => handleClick(e)}
 				onChange={(e) => props.session.updateTitle(e.target.value)}
 			/>
-			<div>{randomArray}</div>
 		</>
 	);
 }
