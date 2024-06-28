@@ -18,6 +18,7 @@ export function SessionsView(props: {
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
 	title: string;
+	test: string | undefined;
 }): JSX.Element {
 	const [{ isOver, canDrop }, drop] = useDrop(() => ({
 		accept: [dragType.SESSION],
@@ -94,6 +95,7 @@ export function SessionsView(props: {
 				<SessionsViewContent {...props} />
 			</div>
 			<SessionsDecoration sessions={props.sessions} />
+			<div>{`Test: ${props.test}`}</div>
 		</div>
 	);
 }

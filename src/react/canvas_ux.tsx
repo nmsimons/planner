@@ -168,7 +168,11 @@ export function ConferenceView(props: {
 		<div className="h-full w-full overflow-auto">
 			<div className="flex flex-row h-full w-full content-start">
 				<div className="flex h-full w-fit p-4">
-					<SessionsView sessions={props.conference.sessions} title="" {...props} />
+					<SessionsView
+						sessions={props.conference.sessions}
+						title="" {...props}
+						test={props.conference.webParts.get("7d6ec965-ba88-4716-aedf-94f01baf623f")?.webPartData.payload}
+					/>
 				</div>
 				<div className="flex flex-row h-full w-full flex-nowrap gap-4 p-4 content-start">
 					<DaysView {...props} />
@@ -195,6 +199,7 @@ export function DaysView(props: {
 				clientId={props.clientId}
 				fluidMembers={props.fluidMembers}
 				title={"Day " + ((Tree.key(day) as number) + 1)}
+				test={props.conference.webParts.get("7d6ec965-ba88-4716-aedf-94f01baf623f")?.webPartData.payload}
 			/>,
 		);
 	}

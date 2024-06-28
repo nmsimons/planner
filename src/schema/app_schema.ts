@@ -118,11 +118,69 @@ export class Days extends sf.array("Days", Sessions) {
 	}
 }
 
+export class WebPartDataSchema extends sf.object("webPartData", {
+	payload: sf.string,
+}) { }
+
+/**
+ * @public
+ * The schema of one layout web part.
+ */
+export class LayoutWebPartSchema extends sf.object("LayoutWebPart", {
+	webPartData: WebPartDataSchema,
+	reservedHeight: sf.optional(sf.number),
+}) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+	public constructor(props: any) {
+		super(props);
+
+		window.setTimeout(this._ensureSubscription, 1000);
+	}
+
+	private _ensureSubscription = () => {
+		Tree.on(this, 'treeChanged', () => {
+			console.log('change occurred');
+		});
+	}
+}
+
+/**
+ * @public
+ * The schema of layout web parts.
+ */
+export class LayoutWebPartsSchema extends sf.map("LayoutWebParts", LayoutWebPartSchema) {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+	public constructor(props: any) {
+		super(props);
+
+		window.setTimeout(this._ensureSubscription, 1000);
+	}
+
+	private _ensureSubscription = () => {
+		Tree.on(this, 'treeChanged', () => {
+			console.log('change occurred');
+		});
+	}
+}
+
+
+export class ConstraintNodeSchema extends sf.object('ConstraintNodeSchema', {
+	id: sf.string
+}) { }
+
+export class LayoutWebPartPlaceholdersSchema extends sf.map(
+	'LayoutWebPartsPlaceholder',
+	ConstraintNodeSchema
+) { }
+
 export class Conference extends sf.object("Conference", {
 	name: sf.string,
 	sessions: Sessions,
 	days: Days,
 	sessionsPerDay: sf.number,
+	webParts: LayoutWebPartsSchema,
+	placeholders: LayoutWebPartPlaceholdersSchema,
+	flag: sf.number
 }) {
 	// Clear all the sessions from the conference
 	public clear() {

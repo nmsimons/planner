@@ -5,13 +5,13 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { createRoot } from "react-dom/client";
 import { ReactApp } from "./react/ux.js";
-import { Conference, appTreeConfiguration } from "./schema/app_schema.js";
+import { Conference, LayoutWebPartSchema, WebPartDataSchema, appTreeConfiguration } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
 import { createSessionPrompter } from "./utils/gpt_helpers.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
 import { containerSchema } from "./schema/container_schema.js";
 import { loadFluidData } from "./infra/fluid.js";
-import { IFluidContainer } from "fluid-framework";
+import { IFluidContainer, Tree } from "fluid-framework";
 
 export async function loadApp(
 	client: AzureClient | OdspClient,
@@ -27,6 +27,61 @@ export async function loadApp(
 	if (sessionTree.compatibility.canInitialize) {
 		sessionTree.initialize({ clients: [] });
 	}
+	const id = "7d6ec965-ba88-4716-aedf-94f01baf623f";
+
+	const update = () => {
+		Tree.runTransaction(
+			appTree.root,
+			(node) => {
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				node.webParts.get(id)!.webPartData = new WebPartDataSchema({
+					payload: String(performance.now()),
+				});
+			},
+			[
+				{
+					type: "nodeInDocument",
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					node: appTree.root.webParts.get(id)!.webPartData
+				},
+			],
+		);
+	};
+	const create = () => {
+		Tree.runTransaction(
+			appTree.root,
+			(node) => {
+				node.placeholders.delete(id);
+				// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+				node.webParts.set(id, new LayoutWebPartSchema({
+					webPartData: new WebPartDataSchema({
+						payload: String(performance.now())
+					})
+				}));
+			},
+			[
+				{
+					type: "nodeInDocument",
+					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+					node: appTree.root.placeholders.get(id)!
+				},
+			],
+		);
+	}
+	const runChange = () => {
+		Tree.runTransaction(appTree.root, node => {
+			node.flag = node.flag + 1;
+		});
+
+		window.setTimeout(() => {
+			if (appTree.root.webParts.get(id)) {
+				update();
+			} else {
+				create();
+				update();
+			}
+		}, 0);
+	};
 
 	if (appTree.compatibility.canInitialize) {
 		appTree.initialize(
@@ -35,9 +90,16 @@ export async function loadApp(
 				sessions: [],
 				days: [],
 				sessionsPerDay: 4,
+				webParts: new Map(),
+				placeholders: new Map([
+					[id, { id: String(Math.random()) }]
+				]),
+				flag: 0
 			}),
 		);
 	}
+
+	window.setTimeout(runChange, 3000);
 
 	// create the root element for React
 	const app = document.createElement("div");
