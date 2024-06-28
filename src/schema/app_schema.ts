@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import { TreeConfiguration, SchemaFactory, Tree } from "fluid-framework";
+import { TreeViewConfiguration, SchemaFactory, Tree } from "fluid-framework";
 import { v4 as uuid } from "uuid";
 
 // Schema is defined using a factory object that generates classes for objects as well
@@ -135,9 +135,6 @@ export class Conference extends sf.object("Conference", {
 
 // Export the tree config appropriate for this schema.
 // This is passed into the SharedTree when it is initialized.
-export const appTreeConfiguration = new TreeConfiguration(
-	// Schema for the root
-	Conference,
-	// initial tree
-	() => new Conference({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 }),
-);
+export const appTreeConfiguration = new TreeViewConfiguration({
+	schema: Conference,
+});

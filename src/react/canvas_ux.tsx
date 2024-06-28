@@ -80,7 +80,7 @@ export function Canvas(props: {
 
 	const updateMembers = () => {
 		if (props.audience.getMyself() == undefined) return;
-		if (props.audience.getMyself()?.userId == undefined) return;
+		if (props.audience.getMyself()?.id == undefined) return;
 		if (props.audience.getMembers() == undefined) return;
 		if (props.container.connectionState !== ConnectionState.Connected) return;
 		if (props.currentUser === undefined) {
@@ -100,7 +100,7 @@ export function Canvas(props: {
 		};
 	}, []);
 
-	const clientId = props.currentUser?.userId ?? "";
+	const clientId = props.currentUser?.id ?? "";
 
 	return (
 		<div className="relative flex grow-0 h-full w-full bg-transparent">

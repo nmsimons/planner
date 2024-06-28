@@ -1,11 +1,11 @@
-import { OdspClient } from "@fluid-experimental/odsp-client";
+import { OdspClient } from "@fluidframework/odsp-client";
 import { AzureClient } from "@fluidframework/azure-client";
 import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { createRoot } from "react-dom/client";
 import { ReactApp } from "./react/ux.js";
-import { appTreeConfiguration } from "./schema/app_schema.js";
+import { Conference, appTreeConfiguration } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
 import { createSessionPrompter } from "./utils/gpt_helpers.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
@@ -21,8 +21,23 @@ export async function loadApp(
 	const { services, container } = await loadFluidData(containerId, containerSchema, client);
 
 	// Initialize the SharedTree DDSes
-	const sessionTree = container.initialObjects.sessionData.schematize(sessionTreeConfiguration);
-	const appTree = container.initialObjects.appData.schematize(appTreeConfiguration);
+	const sessionTree = container.initialObjects.sessionData.viewWith(sessionTreeConfiguration);
+	const appTree = container.initialObjects.appData.viewWith(appTreeConfiguration);
+
+	if (sessionTree.compatibility.canInitialize) {
+		sessionTree.initialize({ clients: [] });
+	}
+
+	if (appTree.compatibility.canInitialize) {
+		appTree.initialize(
+			new Conference({
+				name: "Conference",
+				sessions: [],
+				days: [],
+				sessionsPerDay: 4,
+			}),
+		);
+	}
 
 	// create the root element for React
 	const app = document.createElement("div");

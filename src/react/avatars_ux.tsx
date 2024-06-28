@@ -12,7 +12,7 @@ import {
 } from "@fluentui/react-components";
 import { IMember } from "fluid-framework";
 import { AzureMember } from "@fluidframework/azure-client";
-import { OdspMember } from "@fluid-experimental/odsp-client";
+import { OdspMember } from "@fluidframework/odsp-client";
 
 const avatarClasses = makeStyles({
 	avatars: { backgroundColor: tokens.colorSubtleBackground },
@@ -43,14 +43,14 @@ export function UserAvatars(props: {
 	// Test the type of fluidMembers to see if it is an AzureMember
 	// If it is an AzureMember, set isAzureUser to true
 	// Otherwise, set isAzureUser to false
-	if ((props.fluidMembers[0] as AzureMember).userName !== undefined) {
+	if ((props.fluidMembers[0] as AzureMember).name !== undefined) {
 		isAzureUser = true;
 	}
 
 	// Remove the currentUser from the fluidMembers array based on userId
 	// This is done to prevent the currentUser from appearing in the AvatarGroup
 	const filteredMembers = props.fluidMembers.filter(
-		(member) => member.userId !== props.currentUser?.userId,
+		(member) => member.id !== props.currentUser?.id,
 	);
 
 	const { inlineItems, overflowItems } = partitionAvatarGroupItems({
@@ -59,7 +59,7 @@ export function UserAvatars(props: {
 
 	const getUserName = (member: IMember, isAzureUser: boolean) => {
 		if (isAzureUser) {
-			return (member as AzureMember).userName;
+			return (member as AzureMember).name;
 		} else {
 			return (member as OdspMember).name;
 		}
@@ -71,13 +71,10 @@ export function UserAvatars(props: {
 				{inlineItems.map((member) => (
 					<Tooltip
 						content={getUserName(member, isAzureUser)}
-						key={member.userId}
+						key={member.id}
 						relationship="description"
 					>
-						<AvatarGroupItem
-							name={getUserName(member, isAzureUser)}
-							key={member.userId}
-						/>
+						<AvatarGroupItem name={getUserName(member, isAzureUser)} key={member.id} />
 					</Tooltip>
 				))}
 				{overflowItems && (
@@ -85,7 +82,7 @@ export function UserAvatars(props: {
 						{overflowItems.map((member) => (
 							<AvatarGroupItem
 								name={getUserName(member, isAzureUser)}
-								key={member.userId}
+								key={member.id}
 							/>
 						))}
 					</AvatarGroupPopover>

@@ -3,8 +3,8 @@ import {
 	InteractionRequiredAuthError,
 	PublicClientApplication,
 } from "@azure/msal-browser";
-import { IOdspTokenProvider } from "@fluid-experimental/odsp-client";
-import { TokenResponse } from "@fluidframework/odsp-driver-definitions/beta";
+import { IOdspTokenProvider } from "@fluidframework/odsp-client";
+import { TokenResponse } from "@fluidframework/odsp-driver-definitions/internal";
 
 // Sample implementation of the IOdspTokenProvider interface
 // This class is used to provide the token for the Fluid container and
