@@ -1,52 +1,13 @@
 import { v4 as uuid } from "uuid";
 import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
-import { Session } from "../schema/app_schema.js";
+import { getJsonSchema } from "@fluidframework/tree/internal";
+import { Session, Sessions } from "../schema/app_schema.js";
+import { Ajv } from "ajv";
 
-const generatedSchema = `
-interface GeneratedSessions {
-	sessions: GeneratedSession[];
-}
-interface GeneratedSession {
-	title: string;
-	abstract: string;
-	sessionType: "session" | "workshop" | "panel" | "keynote";
-}
-`;
+const sessionsJsonSchema = getJsonSchema(Sessions);
 
-interface GeneratedSessions {
-	sessions: GeneratedSession[];
-}
-
-const sessionTypes = ["session", "workshop", "panel", "keynote"] as const;
-interface GeneratedSession {
-	title: string;
-	abstract: string;
-	sessionType: (typeof sessionTypes)[number];
-}
-
-function isGeneratedSessions(value: object): value is GeneratedSessions {
-	const sessions = value as Partial<GeneratedSessions>;
-	if (!Array.isArray(sessions.sessions)) {
-		return false;
-	}
-
-	for (const session of sessions.sessions) {
-		if (!isGeneratedSession(session)) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-function isGeneratedSession(value: object): value is GeneratedSession {
-	const session = value as Partial<GeneratedSession>;
-	return (
-		typeof session.title === "string" &&
-		typeof session.abstract === "string" &&
-		sessionTypes.find((s) => s === session.sessionType) !== undefined
-	);
-}
+const jsonValidator = new Ajv();
+const sessionsValidator = jsonValidator.compile(sessionsJsonSchema);
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
 The "sessionType" is a string that indicates the type of the session. It can be one of 'session', 'keynote', 'panel', or 'workshop'.
@@ -101,14 +62,15 @@ export function createSessionPrompter(): (
 	}
 
 	const model = createAzureOpenAILanguageModel(apiKey, endpoint);
-	const translator = createJsonTranslator<GeneratedSessions>(model, {
+	const translator = createJsonTranslator<Sessions>(model, {
 		getTypeName: () => "GeneratedSessions",
-		getSchemaText: () => generatedSchema,
+		getSchemaText: () => JSON.stringify(sessionsJsonSchema),
 		validate(jsonObject: object) {
-			if (isGeneratedSessions(jsonObject)) {
+			if (sessionsValidator(jsonObject)) {
 				return {
 					success: true,
-					data: jsonObject,
+					// TODO: this is sort of a lie. Once we have more formalized simple-tree input types, this would be that type, and not the editable node type.
+					data: jsonObject as Sessions,
 				};
 			}
 
@@ -125,7 +87,7 @@ export function createSessionPrompter(): (
 			if (!result.success) {
 				throw new Error("AI did not return result");
 			}
-			const sessions: Session[] = result.data.sessions.map((l) => {
+			const sessions: Session[] = result.data.map((l) => {
 				const currentTime = new Date().getTime();
 				return new Session({
 					title: l.title,
