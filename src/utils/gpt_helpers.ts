@@ -2,11 +2,11 @@ import { v4 as uuid } from "uuid";
 import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
 import { getJsonSchema } from "@fluidframework/tree/internal";
 import { Session, Sessions } from "../schema/app_schema.js";
-import { Ajv } from "ajv";
+import Ajv from "ajv";
 
 const sessionsJsonSchema = getJsonSchema(Sessions);
 
-const jsonValidator = new Ajv();
+const jsonValidator = new Ajv.default({ strict: false });
 const sessionsValidator = jsonValidator.compile(sessionsJsonSchema);
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
