@@ -5,11 +5,8 @@ import { Session, Sessions } from "../schema/app_schema.js";
 import Ajv from "ajv";
 import { InsertableTypedNode } from "fluid-framework";
 
-const sessionJsonSchema = getJsonSchema(Session);
 const sessionsJsonSchema = getJsonSchema(Sessions);
-
 const jsonValidator = new Ajv.default({ strict: false });
-const sessionValidator = jsonValidator.compile(sessionJsonSchema);
 const sessionsValidator = jsonValidator.compile(sessionsJsonSchema);
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
@@ -71,6 +68,10 @@ export function createSessionPrompter(): (
 		validate(jsonObject: Record<string, unknown>) {
 			const sessionsJsonObject = jsonObject["Sessions"];
 			if (sessionsValidator(sessionsJsonObject)) {
+				console.log("Data passed validation!");
+				console.group();
+				console.log(sessionsJsonObject);
+				console.groupEnd();
 				return {
 					success: true,
 					data: new Sessions(
