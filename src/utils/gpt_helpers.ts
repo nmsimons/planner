@@ -3,10 +3,13 @@ import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
 import { getJsonSchema } from "@fluidframework/tree/internal";
 import { Session, Sessions } from "../schema/app_schema.js";
 import Ajv from "ajv";
+import { InsertableTypedNode } from "fluid-framework";
 
+const sessionJsonSchema = getJsonSchema(Session);
 const sessionsJsonSchema = getJsonSchema(Sessions);
 
 const jsonValidator = new Ajv.default({ strict: false });
+const sessionValidator = jsonValidator.compile(sessionJsonSchema);
 const sessionsValidator = jsonValidator.compile(sessionsJsonSchema);
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
@@ -63,20 +66,31 @@ export function createSessionPrompter(): (
 
 	const model = createAzureOpenAILanguageModel(apiKey, endpoint);
 	const translator = createJsonTranslator<Sessions>(model, {
-		getTypeName: () => "GeneratedSessions",
+		getTypeName: () => "Sessions",
 		getSchemaText: () => JSON.stringify(sessionsJsonSchema),
-		validate(jsonObject: object) {
-			if (sessionsValidator(jsonObject)) {
+		validate(jsonObject: Record<string, unknown>) {
+			const sessionsJsonObject = jsonObject["Sessions"];
+			if (sessionsValidator(sessionsJsonObject)) {
 				return {
 					success: true,
-					// TODO: this is sort of a lie. Once we have more formalized simple-tree input types, this would be that type, and not the editable node type.
-					data: jsonObject as Sessions,
+					data: new Sessions(
+						sessionsJsonObject as Iterable<InsertableTypedNode<typeof Session>>,
+					),
 				};
 			}
 
+			console.error("Malformed generated Sessions");
+			console.group();
+			console.error("Data: ", jsonObject);
+			console.error(
+				"Errors: ",
+				sessionsValidator.errors?.map((e) => JSON.stringify(e)),
+			);
+			console.groupEnd();
+
 			return {
 				success: false,
-				message: "Malformed generated sessions",
+				message: "Malformed generated Sessions",
 			};
 		},
 	});
