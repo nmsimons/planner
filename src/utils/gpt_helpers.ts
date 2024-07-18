@@ -37,11 +37,6 @@ export function createSessionPrompter(): (
 		getTypeName: () => Sessions.identifier,
 		getSchemaText: () => JSON.stringify(sessionsJsonSchema),
 		validate(jsonObject: Record<string, unknown>) {
-			console.log(`Validating generated response against schema "${Sessions.identifier}"...`);
-			console.log("Data:");
-			console.group();
-			console.log(console.log(JSON.stringify(jsonObject)));
-			console.groupEnd();
 			const sessionsJsonObject = jsonObject[Sessions.identifier];
 			if (sessionsValidator(sessionsJsonObject)) {
 				console.log("Response passed validation!");
@@ -53,14 +48,10 @@ export function createSessionPrompter(): (
 				};
 			}
 
-			console.error("Response was malformed.");
-			console.group();
 			console.error(
-				"Errors: ",
+				"Response was malformed.",
 				sessionsValidator.errors?.map((e) => JSON.stringify(e)),
 			);
-			console.groupEnd();
-
 			return {
 				success: false,
 				message: "Malformed generated Sessions",
