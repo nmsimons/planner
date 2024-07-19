@@ -19,7 +19,7 @@ export class Session extends sf.object(
 	// Fields for sessions which SharedTree will store and synchronize across clients.
 	// These fields are exposed as members of instances of the Session class.
 	{
-		id: sf.string,
+		id: sf.identifier,
 		title: sf.string,
 		abstract: sf.string,
 		sessionType: sf.string,
