@@ -6,7 +6,7 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { createRoot } from "react-dom/client";
 import { ReactApp } from "./react/ux.js";
-import { appTreeConfiguration } from "./schema/app_schema.js";
+import { appTreeConfiguration, Session } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
 import { createSessionPrompter } from "./utils/gpt_helpers.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
@@ -58,9 +58,12 @@ export async function loadApp(
 							return;
 						}
 					}
-					const sessions = await prompter(prompt);
-					if (sessions === undefined) {
-						alert("AI failed to generate sessions. Please try again.");
+
+					let sessions: Iterable<Session>;
+					try {
+						sessions = await prompter(prompt);
+					} catch (error) {
+						alert(`AI failed to generate sessions. Error: "${error}".`);
 						return;
 					}
 					appTree.root.sessions.insertAtEnd(...sessions);
