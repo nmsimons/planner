@@ -9,8 +9,7 @@ import { v4 as uuid } from "uuid";
 // Schema is defined using a factory object that generates classes for objects as well
 // as list and map nodes.
 
-// Include a UUID to guarantee that this schema will be uniquely identifiable.
-const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
+const sf = new SchemaFactory("Planner");
 
 // Define the schema for the session object.
 // Helper functions for working with the data contained in this object
@@ -20,7 +19,7 @@ export class Session extends sf.object(
 	// Fields for sessions which SharedTree will store and synchronize across clients.
 	// These fields are exposed as members of instances of the Session class.
 	{
-		id: sf.string,
+		id: sf.identifier,
 		title: sf.string,
 		abstract: sf.string,
 		sessionType: sf.string,
