@@ -22,10 +22,11 @@ export async function loadApp(
 
 	// Initialize the SharedTree DDSes
 	const sessionTree = container.initialObjects.sessionData.viewWith(sessionTreeConfiguration);
-	sessionTree.initialize({ clients: [] });
+	if (sessionTree.compatibility.canInitialize) sessionTree.initialize({ clients: [] });
 
 	const appTree = container.initialObjects.appData.viewWith(appTreeConfiguration);
-	appTree.initialize({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 });
+	if (appTree.compatibility.canInitialize)
+		appTree.initialize({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 });
 
 	// create the root element for React
 	const app = document.createElement("div");
