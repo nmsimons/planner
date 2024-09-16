@@ -1,6 +1,6 @@
 import { v4 as uuid } from "uuid";
 import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
-import { Session } from "../schema/app_schema.js";
+import { Moment } from "../schema/app_schema.js";
 
 const generatedSchema = `
 interface GeneratedSessions {
@@ -81,9 +81,7 @@ Or, another example, if a user asks for two lectures about raccoons where one is
 }
 `;
 
-export function createSessionPrompter(): (
-	prompt: string,
-) => Promise<Iterable<Session> | undefined> {
+export function createSessionPrompter(): (prompt: string) => Promise<Iterable<Moment> | undefined> {
 	const endpoint =
 		process.env.AZURE_OPENAI_ENDPOINT ?? localStorage.getItem("AZURE_OPENAI_ENDPOINT");
 
@@ -125,15 +123,16 @@ export function createSessionPrompter(): (
 			if (!result.success) {
 				throw new Error("AI did not return result");
 			}
-			const sessions: Session[] = result.data.sessions.map((l) => {
+			const sessions: Moment[] = result.data.sessions.map((l) => {
 				const currentTime = new Date().getTime();
-				return new Session({
+				return new Moment({
 					title: l.title,
 					abstract: l.abstract,
 					created: currentTime,
 					sessionType: l.sessionType,
 					lastChanged: currentTime,
 					id: uuid(),
+					tags: [],
 				});
 			});
 			return sessions;

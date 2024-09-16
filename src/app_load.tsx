@@ -42,7 +42,7 @@ export async function loadApp(
 	root.render(
 		<DndProvider backend={HTML5Backend}>
 			<ReactApp
-				conferenceTree={appTree}
+				lifeTree={appTree}
 				sessionTree={sessionTree}
 				audience={services.audience}
 				container={container}
@@ -60,7 +60,7 @@ export async function loadApp(
 						alert("AI failed to generate sessions. Please try again.");
 						return;
 					}
-					appTree.root.sessions.insertAtEnd(...sessions);
+					appTree.root.moment.insertAtEnd(...sessions);
 				}} // eslint-disable-line @typescript-eslint/no-empty-function
 			/>
 		</DndProvider>,

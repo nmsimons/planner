@@ -4,7 +4,7 @@
  */
 
 import React, { Fragment, useEffect, useRef, useState } from "react";
-import { Conference, Session, Sessions } from "../schema/app_schema.js";
+import { Life, Moment, Moments } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
 import { testRemoteNoteSelection, updateRemoteNoteSelection } from "../utils/session_helpers.js";
@@ -17,7 +17,7 @@ import { Dialog, Listbox, Transition } from "@headlessui/react";
 import { ShowDetailsButton } from "./button_ux.js";
 
 export function RootSessionWrapper(props: {
-	session: Session;
+	session: Moment;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
@@ -37,7 +37,7 @@ export function RootSessionWrapper(props: {
 }
 
 export function SessionView(props: {
-	session: Session;
+	session: Moment;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
@@ -50,9 +50,9 @@ export function SessionView(props: {
 	const selectedColor = "bg-yellow-100";
 
 	const parent = Tree.parent(props.session);
-	if (!Tree.is(parent, Sessions)) return <></>;
+	if (!Tree.is(parent, Moments)) return <></>;
 	const grandParent = Tree.parent(parent);
-	if (Tree.is(grandParent, Conference)) unscheduled = true;
+	if (Tree.is(grandParent, Life)) unscheduled = true;
 
 	const [{ status }, toggle] = useTransition({
 		timeout: 1000,
@@ -145,12 +145,12 @@ export function SessionView(props: {
 			canDrop: !!monitor.canDrop(),
 		}),
 		canDrop: (item) => {
-			if (Tree.is(item, Session) && item !== props.session) return true;
+			if (Tree.is(item, Moment) && item !== props.session) return true;
 			return false;
 		},
 		drop: (item) => {
 			const droppedItem = item;
-			if (Tree.is(droppedItem, Session) && Tree.is(parent, Sessions)) {
+			if (Tree.is(droppedItem, Moment) && Tree.is(parent, Moments)) {
 				moveItem(droppedItem, parent.indexOf(props.session), parent);
 			}
 			return;
@@ -231,7 +231,7 @@ function RemoteSelection(props: { show: boolean }): JSX.Element {
 }
 
 function SessionTitle(props: {
-	session: Session;
+	session: Moment;
 	update: (value: selectAction) => void;
 }): JSX.Element {
 	// The text field updates the Fluid data model on every keystroke in this demo.
@@ -260,7 +260,7 @@ function SessionTitle(props: {
 }
 
 function SessionToolbar(props: {
-	session: Session;
+	session: Moment;
 	setIsDetailsShowing: (arg: boolean) => void;
 }): JSX.Element {
 	return (
@@ -271,7 +271,7 @@ function SessionToolbar(props: {
 	);
 }
 
-function SessionTypeLabel(props: { session: Session }): JSX.Element {
+function SessionTypeLabel(props: { session: Moment }): JSX.Element {
 	const sessionType = props.session.sessionType;
 	let color = "";
 	switch (sessionType) {
@@ -303,7 +303,7 @@ function SessionTypeLabel(props: { session: Session }): JSX.Element {
 export default function SessionDetails(props: {
 	isOpen: boolean;
 	setIsOpen: (arg: boolean) => void;
-	session: Session;
+	session: Moment;
 }): JSX.Element {
 	const buttonClass = "text-white font-bold py-2 px-4 rounded";
 	return (
@@ -360,7 +360,7 @@ const sessionTypes = [
 	{ id: 4, name: "Workshop", value: "workshop" },
 ];
 
-function TypeList(props: { session: Session }): JSX.Element {
+function TypeList(props: { session: Moment }): JSX.Element {
 	const [selectedSessionType, setSelectedSessionType] = useState(
 		sessionTypes[sessionTypes.findIndex((x) => x.value === props.session.sessionType)],
 	);
@@ -373,30 +373,32 @@ function TypeList(props: { session: Session }): JSX.Element {
 	}, [selectedSessionType]);
 
 	return (
-		<Listbox value={selectedSessionType} onChange={setSelectedSessionType}>
-			<div className="relative mb-2">
-				<Listbox.Button className="relative w-full cursor-pointer resize-none border-2 border-gray-500 bg-white p-2 text-black text-left focus:outline-none">
-					<span className="block truncate">{selectedSessionType.name}</span>
-				</Listbox.Button>
-				<Transition
-					as={Fragment}
-					leave="transition ease-in duration-100"
-					leaveFrom="opacity-100"
-					leaveTo="opacity-0"
-				>
-					<Listbox.Options className="absolute shadow-lg max-h-60 w-full overflow-auto border-2 border-gray-500 bg-white p-2 mt-1 text-black text-left">
-						{sessionTypes.map((sessionTypes) => (
-							<Listbox.Option
-								key={sessionTypes.id}
-								className={"relative cursor-pointer select-none text-black"}
-								value={sessionTypes}
-							>
-								{sessionTypes.name}
-							</Listbox.Option>
-						))}
-					</Listbox.Options>
-				</Transition>
-			</div>
-		</Listbox>
+		<>
+			<Listbox value={selectedSessionType} onChange={setSelectedSessionType}>
+				<div className="relative mb-2">
+					<Listbox.Button className="relative w-full cursor-pointer resize-none border-2 border-gray-500 bg-white p-2 text-black text-left focus:outline-none">
+						<span className="block truncate">{selectedSessionType.name}</span>
+					</Listbox.Button>
+					<Transition
+						as={Fragment}
+						leave="transition ease-in duration-100"
+						leaveFrom="opacity-100"
+						leaveTo="opacity-0"
+					>
+						<Listbox.Options className="absolute shadow-lg max-h-60 w-full overflow-auto border-2 border-gray-500 bg-white p-2 mt-1 text-black text-left">
+							{sessionTypes.map((sessionTypes) => (
+								<Listbox.Option
+									key={sessionTypes.id}
+									className={"relative cursor-pointer select-none text-black"}
+									value={sessionTypes}
+								>
+									{sessionTypes.name}
+								</Listbox.Option>
+							))}
+						</Listbox.Options>
+					</Transition>
+				</div>
+			</Listbox>
+		</>
 	);
 }

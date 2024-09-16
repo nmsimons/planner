@@ -4,7 +4,7 @@
  */
 
 import React, { useEffect, useState } from "react";
-import { Conference } from "../schema/app_schema.js";
+import { Life } from "../schema/app_schema.js";
 import { ClientSession } from "../schema/session_schema.js";
 import {
 	ConnectionState,
@@ -18,7 +18,7 @@ import { RootSessionWrapper } from "./session_ux.js";
 import {
 	Floater,
 	NewDayButton,
-	NewSessionButton,
+	NewMomentButton,
 	ButtonGroup,
 	UndoButton,
 	RedoButton,
@@ -27,11 +27,13 @@ import {
 	Divider,
 	DeleteSessionsButton,
 } from "./button_ux.js";
+import { Moments } from "../schema/app_schema.js";
 import { undoRedo } from "../utils/undo.js";
 import { SessionsView } from "./sessions_ux.js";
+import { TextField } from "@mui/material";
 
 export function Canvas(props: {
-	conferenceTree: TreeView<typeof Conference>;
+	lifeTree: TreeView<typeof Life>;
 	sessionTree: TreeView<typeof ClientSession>;
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
@@ -51,7 +53,7 @@ export function Canvas(props: {
 	// For more complex apps, this code can be included
 	// on lower level components.
 	useEffect(() => {
-		const unsubscribe = Tree.on(props.conferenceTree.root, "treeChanged", () => {
+		const unsubscribe = Tree.on(props.lifeTree.root, "treeChanged", () => {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
@@ -104,32 +106,29 @@ export function Canvas(props: {
 
 	return (
 		<div className="relative flex grow-0 h-full w-full bg-transparent">
-			<ConferenceView
-				conference={props.conferenceTree.root}
+			<LifeView
+				life={props.lifeTree.root}
 				clientId={clientId}
 				clientSession={props.sessionTree.root}
 				fluidMembers={props.fluidMembers}
 			/>
 			<Floater>
 				<ButtonGroup>
-					<NewSessionButton conference={props.conferenceTree.root} clientId={clientId} />
+					<NewMomentButton life={props.lifeTree.root} clientId={clientId} />
 					<NewDayButton
-						days={props.conferenceTree.root.days}
+						days={props.lifeTree.root.days}
 						session={props.sessionTree.root}
 						clientId={clientId}
 					/>
 					<DeleteDayButton
-						days={props.conferenceTree.root.days}
+						days={props.lifeTree.root.days}
 						session={props.sessionTree.root}
 						clientId={clientId}
 					/>
 				</ButtonGroup>
 				<Divider />
 				<ButtonGroup>
-					<DeleteSessionsButton
-						conference={props.conferenceTree.root}
-						clientId={clientId}
-					/>
+					<DeleteSessionsButton life={props.lifeTree.root} clientId={clientId} />
 				</ButtonGroup>
 				<Divider />
 				<ButtonGroup>
@@ -145,48 +144,86 @@ export function Canvas(props: {
 	);
 }
 
-export function ConferenceView(props: {
-	conference: Conference;
+export function LifeView(props: {
+	life: Life;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
 }): JSX.Element {
-	const sessionArray = [];
-	for (const i of props.conference.sessions) {
-		sessionArray.push(
-			<RootSessionWrapper
-				key={i.id}
-				session={i}
-				clientId={props.clientId}
-				clientSession={props.clientSession}
-				fluidMembers={props.fluidMembers}
-			/>,
-		);
+	const sessionArray =
+		props.life.moment.length > 0
+			? props.life.moment.map((session) => (
+					<RootSessionWrapper
+						key={session.id}
+						session={session}
+						clientId={props.clientId}
+						clientSession={props.clientSession}
+						fluidMembers={props.fluidMembers}
+					/>
+			  ))
+			: null;
+
+	const [inputValue, setInputValue] = useState<string>("");
+	const inputRef = React.useRef<HTMLInputElement>(null);
+
+	useEffect(() => {
+		if (inputRef.current) {
+			inputRef.current.focus();
+		}
+	}, []);
+
+	const handleKeyDown = (e: React.KeyboardEvent) => {
+		if (e.key === "Enter") {
+			props.life.moment.addSession("" + inputValue + " - " + getDateTime());
+			setInputValue("");
+		}
+	};
+	function getDateTime(): string {
+		const now = new Date();
+
+		const options: Intl.DateTimeFormatOptions = {
+			month: "short",
+			day: "numeric",
+			hour: "numeric",
+			minute: "numeric",
+			hour12: true,
+		};
+		const formatter = new Intl.DateTimeFormat("en-US", options);
+		return formatter.format(now);
 	}
 
 	return (
-		<div className="h-full w-full overflow-auto">
-			<div className="flex flex-row h-full w-full content-start">
-				<div className="flex h-full w-fit p-4">
-					<SessionsView sessions={props.conference.sessions} title="" {...props} />
-				</div>
-				<div className="flex flex-row h-full w-full flex-nowrap gap-4 p-4 content-start">
-					<DaysView {...props} />
-				</div>
-			</div>
+		<div
+			className={`h-full w-full flex flex-col ${
+				sessionArray ? "items-center" : "items-center justify-center"
+			} ${sessionArray ? "justify-between" : ""}`}
+		>
+			<SessionsViewContent sessions={props.life.moment} {...props} />
+			<TextField
+				variant="standard"
+				value={inputValue}
+				placeholder="What just happened?"
+				style={{ width: "160px", position: "fixed", bottom: "150px" }}
+				InputProps={{
+					disableUnderline: true,
+				}}
+				inputRef={inputRef}
+				onChange={(e) => setInputValue(e.target.value)}
+				onKeyDown={(e) => handleKeyDown(e)}
+			/>
 		</div>
 	);
 }
 
-// React component that renders each day in the conference side by side
+// React component that renders each day in the Life side by side
 export function DaysView(props: {
-	conference: Conference;
+	life: Life;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
 }): JSX.Element {
 	const dayArray = [];
-	for (const day of props.conference.days) {
+	for (const day of props.life.days) {
 		dayArray.push(
 			<SessionsView
 				key={Tree.key(day)}
@@ -200,4 +237,45 @@ export function DaysView(props: {
 	}
 
 	return <>{dayArray}</>;
+}
+
+function SessionsViewContent(props: {
+	sessions: Moments;
+	clientId: string;
+	clientSession: ClientSession;
+	fluidMembers: IMember[];
+}): JSX.Element {
+	const sessionsArray =
+		props.sessions.length > 0
+			? props.sessions.map((session) => (
+					<RootSessionWrapper
+						key={session.id}
+						session={session}
+						clientId={props.clientId}
+						clientSession={props.clientSession}
+						fluidMembers={props.fluidMembers}
+					/>
+			  ))
+			: null;
+
+	const parent = Tree.parent(props.sessions);
+
+	if (Tree.is(parent, Life)) {
+		return (
+			<>
+				<div
+					className={`flex ${
+						sessionsArray ? "flex-wrap" : "hidden"
+					} w-full gap-4 p-4 content-start`}
+					style={sessionsArray ? {} : { flex: "none" }}
+				>
+					{sessionsArray}
+				</div>
+			</>
+		);
+	} else {
+		return (
+			<div className="flex flex-col flex-nowrap gap-4 p-4 content-start">{sessionsArray}</div>
+		);
+	}
 }

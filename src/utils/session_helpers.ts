@@ -4,12 +4,12 @@
  */
 
 import { IMember } from "fluid-framework";
-import { Session } from "../schema/app_schema.js";
+import { Moment } from "../schema/app_schema.js";
 import { ClientSession, Client } from "../schema/session_schema.js";
 import { selectAction, undefinedUserId } from "./utils.js";
 
 export const testRemoteNoteSelection = (
-	item: Session,
+	item: Moment,
 	session: ClientSession,
 	clientId: string,
 	setRemoteSelected: (value: boolean) => void,
@@ -39,7 +39,7 @@ export const testRemoteNoteSelection = (
 };
 
 export const updateRemoteNoteSelection = (
-	item: Session,
+	item: Moment,
 	action: selectAction,
 	session: ClientSession,
 	clientId: string,
