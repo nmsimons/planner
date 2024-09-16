@@ -1,6 +1,8 @@
 import { AzureClient } from "@fluidframework/azure-client";
 import { loadApp } from "../app_load.js";
 import { clientProps } from "../infra/azure/azureClientProps.js";
+import { authHelper } from "../infra/spe/authHelper.js";
+import { AuthenticationResult } from "@azure/msal-browser";
 
 export async function anonymousAzureStart() {
 	// Get the root container id from the URL
@@ -21,4 +23,39 @@ export async function anonymousAzureStart() {
 		// The newly attached container is given a unique ID that can be used to access the container in another session
 		history.replaceState(undefined, "", "#" + containerId);
 	}
+}
+
+export async function signedInAzureStart() {
+	const msalInstance = await authHelper();
+
+	// Handle the login redirect flows
+	msalInstance
+		.handleRedirectPromise()
+		.then((tokenResponse: AuthenticationResult | null) => {
+			// If the tokenResponse is not null, then the user is signed in
+			// and the tokenResponse is the result of the redirect.
+			if (tokenResponse !== null) {
+				const account = msalInstance.getAllAccounts()[0];
+				anonymousAzureStart();
+			} else {
+				const currentAccounts = msalInstance.getAllAccounts();
+				if (currentAccounts.length === 0) {
+					// no accounts signed-in, attempt to sign a user in
+					msalInstance.loginRedirect({
+						scopes: ["User.Read"],
+					});
+				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
+					// The user is singed in.
+					// Treat more than one account signed in and a single account the same as
+					// this is just a sample. But a real app would need to handle the multiple accounts case.
+					// For now, just use the first account.
+					const account = msalInstance.getAllAccounts()[0];
+					anonymousAzureStart();
+				}
+			}
+		})
+		.catch((error: Error) => {
+			console.log("Error in handleRedirectPromise: " + error.message);
+			anonymousAzureStart();
+		});
 }

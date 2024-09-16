@@ -38,17 +38,17 @@ export class AzureFunctionTokenProvider implements ITokenProvider {
 
 	public async fetchOrdererToken(tenantId: string, documentId?: string): Promise<ITokenResponse> {
 		return {
-			jwt: await this.getToken(tenantId, documentId),
+			jwt: await this.getAfrToken(tenantId, documentId),
 		};
 	}
 
 	public async fetchStorageToken(tenantId: string, documentId: string): Promise<ITokenResponse> {
 		return {
-			jwt: await this.getToken(tenantId, documentId),
+			jwt: await this.getAfrToken(tenantId, documentId),
 		};
 	}
 
-	private async getToken(tenantId: string, documentId: string | undefined): Promise<string> {
+	private async getAfrToken(tenantId: string, documentId: string | undefined): Promise<string> {
 		const response = await axios.get(this.azFunctionUrl, {
 			params: {
 				tenantId,

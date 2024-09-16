@@ -37,7 +37,6 @@ jobs:
           AZURE_ORDERER: https://us.fluidrelay.azure.com
           AZURE_FUNCTION_TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net/api/gettoken
           FLUID_CLIENT: azure
-
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
