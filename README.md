@@ -16,7 +16,7 @@ npm run start:server
 Running this command from your terminal window will launch the Azure Fluid Relay local server. Once the server is started, you can run your application against the local service.
 
 ```bash
-npm run start
+npm run dev
 ```
 
 One important note is that you will need to use a token provider or, purely for testing and development, use the insecure token provider. There are instructions on how to set this up on the [Fluid Framework website](https://aka.ms/fluid).
