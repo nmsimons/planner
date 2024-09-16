@@ -1,6 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
 import { Session } from "../schema/app_schema.js";
+import { AzureOpenAI } from "openai";
 
 const generatedSchema = `
 interface GeneratedSessions {
@@ -100,6 +101,7 @@ export function createSessionPrompter(): (
 		);
 	}
 
+	const openai = new AzureOpenAI();
 	const model = createAzureOpenAILanguageModel(apiKey, endpoint);
 	const translator = createJsonTranslator<GeneratedSessions>(model, {
 		getTypeName: () => "GeneratedSessions",

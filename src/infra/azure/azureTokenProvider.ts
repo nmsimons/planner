@@ -3,13 +3,8 @@
  * Licensed under the MIT License.
  */
 
-import {
-	AzureMember,
-	ITokenClaims,
-	ITokenProvider,
-	ITokenResponse,
-	IUser,
-} from "@fluidframework/azure-client";
+import { AzureMember, ITokenProvider, ITokenResponse, IUser } from "@fluidframework/azure-client";
+import { ITokenClaims } from "@fluidframework/azure-client/legacy";
 import { ScopeType } from "@fluidframework/protocol-definitions";
 import axios from "axios";
 import { KJUR as jsrsasign } from "jsrsasign";
@@ -38,28 +33,28 @@ export class AzureFunctionTokenProvider implements ITokenProvider {
 	 */
 	constructor(
 		private readonly azFunctionUrl: string,
-		private readonly user?: Pick<AzureMember, "userName" | "userId" | "additionalDetails">,
+		private readonly user?: Pick<AzureMember, "name" | "id" | "additionalDetails">,
 	) {}
 
 	public async fetchOrdererToken(tenantId: string, documentId?: string): Promise<ITokenResponse> {
 		return {
-			jwt: await this.getToken(tenantId, documentId),
+			jwt: await this.getAfrToken(tenantId, documentId),
 		};
 	}
 
 	public async fetchStorageToken(tenantId: string, documentId: string): Promise<ITokenResponse> {
 		return {
-			jwt: await this.getToken(tenantId, documentId),
+			jwt: await this.getAfrToken(tenantId, documentId),
 		};
 	}
 
-	private async getToken(tenantId: string, documentId: string | undefined): Promise<string> {
+	private async getAfrToken(tenantId: string, documentId: string | undefined): Promise<string> {
 		const response = await axios.get(this.azFunctionUrl, {
 			params: {
 				tenantId,
 				documentId,
-				userName: this.user?.userName,
-				userId: this.user?.userId,
+				userName: this.user?.name,
+				userId: this.user?.id,
 				additionalDetails: this.user?.additionalDetails,
 			},
 		});
@@ -123,8 +118,8 @@ export class InsecureTokenProvider implements ITokenProvider {
 export const user = generateUser();
 
 export const azureUser = {
-	userId: user.id,
-	userName: user.name,
+	id: user.id,
+	name: user.name,
 };
 
 /**
