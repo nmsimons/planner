@@ -5,7 +5,7 @@
 
 import { TreeViewConfiguration, SchemaFactory } from "fluid-framework";
 
-const sf = new SchemaFactory("Session-Planner");
+const sf = new SchemaFactory("Session");
 
 export class Client extends sf.object("Client", {
 	clientId: sf.string,
