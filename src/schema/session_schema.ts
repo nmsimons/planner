@@ -5,8 +5,7 @@
 
 import { TreeViewConfiguration, SchemaFactory } from "fluid-framework";
 
-// Include a UUID to guarantee that this schema will be uniquely identifiable
-const sf = new SchemaFactory("Session");
+const sf = new SchemaFactory("Session-Planner");
 
 export class Client extends sf.object("Client", {
 	clientId: sf.string,
