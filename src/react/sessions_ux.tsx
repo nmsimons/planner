@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Days, Session, Sessions } from "../schema/app_schema.js";
+import { Life, Days, Moment, Moments } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
@@ -13,7 +13,7 @@ import { IMember, Tree } from "fluid-framework";
 import { RootSessionWrapper } from "./session_ux.js";
 
 export function SessionsView(props: {
-	sessions: Sessions;
+	sessions: Moments;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
@@ -26,7 +26,7 @@ export function SessionsView(props: {
 			canDrop: !!monitor.canDrop(),
 		}),
 		canDrop: (item) => {
-			if (Tree.is(item, Session)) return true;
+			if (Tree.is(item, Moment)) return true;
 			return false;
 		},
 		drop: (item, monitor) => {
@@ -41,7 +41,7 @@ export function SessionsView(props: {
 			}
 
 			const droppedItem = item;
-			if (Tree.is(droppedItem, Session)) {
+			if (Tree.is(droppedItem, Moment)) {
 				moveItem(droppedItem, props.sessions.length, props.sessions);
 			}
 
@@ -61,7 +61,7 @@ export function SessionsView(props: {
 	let formatting = "p-2 h-[calc(100vh-182px)] transition-all overflow-auto";
 	let borderFormatting = "relative transition-all border-4 border-dashed h-fit overflow-hidden";
 	const parent = Tree.parent(props.sessions);
-	if (Tree.is(parent, Conference)) {
+	if (Tree.is(parent, Life)) {
 		backgroundColor = "bg-blue-200";
 		formatting = `${formatting} w-[580px]`;
 		borderFormatting = `${borderFormatting} w-full`;
@@ -70,7 +70,7 @@ export function SessionsView(props: {
 		formatting = `${formatting} min-w-72`;
 		borderFormatting = `${borderFormatting} w-fit`;
 		const grandParent = Tree.parent(parent);
-		if (Tree.is(grandParent, Conference)) {
+		if (Tree.is(grandParent, Life)) {
 			if (props.sessions.length > grandParent.sessionsPerDay) {
 				backgroundColor = "bg-red-400";
 			} else if (props.sessions.length == grandParent.sessionsPerDay) {
@@ -98,11 +98,11 @@ export function SessionsView(props: {
 	);
 }
 
-function SessionsDecoration(props: { sessions: Sessions }): JSX.Element {
+function SessionsDecoration(props: { sessions: Moments }): JSX.Element {
 	const parent = Tree.parent(props.sessions);
 	const formatting = "absolute bottom-6 right-6 bg-transparent font-extrabold text-7xl z-0";
-	if (Tree.is(parent, Conference)) {
-		return <div className={`text-blue-300 ${formatting}`}>Unscheduled</div>;
+	if (Tree.is(parent, Life)) {
+		return <div className={`${formatting}`}>Unscheduled</div>;
 	} else {
 		return <div className={`text-gray-300 ${formatting}`}>Day</div>;
 	}
@@ -123,7 +123,7 @@ function SessionsTitle(props: { title: string }): JSX.Element {
 }
 
 function SessionsViewContent(props: {
-	sessions: Sessions;
+	sessions: Moments;
 	clientId: string;
 	clientSession: ClientSession;
 	fluidMembers: IMember[];
@@ -143,7 +143,7 @@ function SessionsViewContent(props: {
 
 	const parent = Tree.parent(props.sessions);
 
-	if (Tree.is(parent, Conference)) {
+	if (Tree.is(parent, Life)) {
 		return (
 			<>
 				<div className="flex flex-row flex-wrap w-full gap-4 p-4 content-start">

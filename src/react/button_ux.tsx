@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Days } from "../schema/app_schema.js";
+import { Life, Days } from "../schema/app_schema.js";
 import { findSession } from "../utils/app_helpers.js";
 import {
 	ThumbLikeFilled,
@@ -64,10 +64,10 @@ export function DeleteDayButton(props: {
 	);
 }
 
-export function NewSessionButton(props: { conference: Conference; clientId: string }): JSX.Element {
+export function NewMomentButton(props: { life: Life; clientId: string }): JSX.Element {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		props.conference.sessions.addSession();
+		props.life.moment.addSession();
 	};
 
 	return (
@@ -82,12 +82,9 @@ export function NewSessionButton(props: { conference: Conference; clientId: stri
 	);
 }
 
-export function DeleteSessionsButton(props: {
-	conference: Conference;
-	clientId: string;
-}): JSX.Element {
+export function DeleteSessionsButton(props: { life: Life; clientId: string }): JSX.Element {
 	const handleClick = () => {
-		props.conference.clear();
+		props.life.clear();
 	};
 	return (
 		<IconButton

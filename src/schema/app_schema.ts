@@ -12,13 +12,26 @@ import { v4 as uuid } from "uuid";
 // Include a UUID to guarantee that this schema will be uniquely identifiable.
 const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
 
-// Define the schema for the session object.
+export class Tag extends sf.object(
+	"Tag",
+	// Fields for tags
+	{
+		name: sf.string,
+	},
+) {
+	// Update the name of the tag
+	public updateName(name: string) {
+		this.name = name;
+	}
+}
+
+// Define the schema for the Moment object.
 // Helper functions for working with the data contained in this object
 // are included in this class definition as methods.
-export class Session extends sf.object(
-	"Session",
-	// Fields for sessions which SharedTree will store and synchronize across clients.
-	// These fields are exposed as members of instances of the Session class.
+export class Moment extends sf.object(
+	"Moment",
+	// Fields for moments which SharedTree will store and synchronize across clients.
+	// These fields are exposed as members of instances of the Moment class.
 	{
 		id: sf.string,
 		title: sf.string,
@@ -26,6 +39,7 @@ export class Session extends sf.object(
 		sessionType: sf.string,
 		created: sf.number,
 		lastChanged: sf.number,
+		tags: sf.array("Tags", Tag),
 	},
 ) {
 	// Update the title text and also update the timestamp
@@ -41,9 +55,19 @@ export class Session extends sf.object(
 	}
 
 	// Update the session type and also update the timestamp
-	public updateSessionType(type: keyof typeof SessionType) {
+	public updateSessionType(type: keyof typeof MomentType) {
 		this.lastChanged = new Date().getTime();
 		this.sessionType = type;
+	}
+
+	// Add a tag to this moment
+	public addTag(tagName: string) {
+		const existingTag = this.tags.find((tag) => tag.name === tagName);
+		if (!existingTag) {
+			const newTag = new Tag({ name: tagName });
+			this.tags.insertAtEnd(newTag);
+		}
+		this.lastChanged = new Date().getTime();
 	}
 
 	/**
@@ -52,56 +76,60 @@ export class Session extends sf.object(
 	public delete() {
 		const parent = Tree.parent(this);
 		// Use type narrowing to ensure that parent is correct.
-		if (Tree.is(parent, Sessions)) {
+		if (Tree.is(parent, Moments)) {
 			const index = parent.indexOf(this);
 			parent.removeAt(index);
 		}
 	}
 }
 
-const SessionType = {
+const MomentType = {
 	session: "Session",
 	workshop: "Workshop",
 	panel: "Panel",
 	keynote: "Keynote",
 };
 
-export class Sessions extends sf.array("Sessions", Session) {
-	// Add a session to the conference
-	public addSession() {
+export class Moments extends sf.array("Moments", Moment) {
+	// Add a moment to the life
+	public addSession(title?: string) {
 		const currentTime = new Date().getTime();
-		const session = new Session({
+		if (title === undefined) {
+			title = "New Session";
+		}
+		const moment = new Moment({
 			id: uuid(),
-			title: "New Session",
-			abstract: "New Abstract",
+			title,
+			abstract: "Add a description",
 			sessionType: "session",
 			created: currentTime,
 			lastChanged: currentTime,
+			tags: [],
 		});
-		this.insertAtEnd(session);
-		return session;
+		this.insertAtEnd(moment);
+		return moment;
 	}
 }
 
-export class Days extends sf.array("Days", Sessions) {
-	// Add a day to the conference
-	public addDay(): Sessions {
-		const day = new Sessions([]);
+export class Days extends sf.array("Days", Moments) {
+	// Add a day to the Life
+	public addDay(): Moments {
+		const day = new Moments([]);
 		this.insertAtEnd(day);
 		return day;
 	}
 
-	// Remove the last day from the conference
+	// Remove the last day from the Life
 	public removeDay() {
 		if (this.length === 0) {
 			return;
 		}
-		// Get the conference object from the parent of this map
-		const conference = Tree.parent(this);
-		// Get the sessions array from the conference object
+		// Get the life object from the parent of this map
+		const life = Tree.parent(this);
+		// Get the sessions array from the life object
 		// and move all the sessions in the Day to the sessions array
-		if (Tree.is(conference, Conference)) {
-			const sessions = conference?.sessions;
+		if (Tree.is(life, Life)) {
+			const sessions = life?.moment;
 			const lastDay = this[this.length - 1];
 			if (lastDay) {
 				Tree.runTransaction<Days>(this, () => {
@@ -110,7 +138,7 @@ export class Days extends sf.array("Days", Sessions) {
 						const index = sessions.length;
 						sessions.moveRangeToIndex(index, 0, lastDay.length, lastDay);
 					}
-					// Remove the day from the conference
+					// Remove the day from the Life
 					this.removeAt(this.length - 1);
 				});
 			}
@@ -118,16 +146,16 @@ export class Days extends sf.array("Days", Sessions) {
 	}
 }
 
-export class Conference extends sf.object("Conference", {
+export class Life extends sf.object("Life", {
 	name: sf.string,
-	sessions: Sessions,
+	moment: Moments,
 	days: Days,
 	sessionsPerDay: sf.number,
 }) {
-	// Clear all the sessions from the conference
+	// Clear all the moments from the life
 	public clear() {
-		Tree.runTransaction<Conference>(this, () => {
-			if (this.sessions.length > 0) this.sessions.removeRange();
+		Tree.runTransaction<Life>(this, () => {
+			if (this.moment.length > 0) this.moment.removeRange();
 			if (this.days.length > 0) this.days.removeRange();
 		});
 	}
@@ -137,7 +165,7 @@ export class Conference extends sf.object("Conference", {
 // This is passed into the SharedTree when it is initialized.
 export const appTreeConfiguration = new TreeConfiguration(
 	// Schema for the root
-	Conference,
+	Life,
 	// initial tree
-	() => new Conference({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 }),
+	() => new Life({ name: "Life", moment: [], days: [], sessionsPerDay: 4 }),
 );
