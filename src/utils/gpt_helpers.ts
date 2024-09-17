@@ -1,7 +1,7 @@
 import { v4 as uuid } from "uuid";
 import { Session } from "../schema/app_schema.js";
 import { AzureOpenAI } from "openai";
-import axios, { AxiosRequestConfig } from "axios";
+import axios, { AxiosHeaders, AxiosRequestConfig } from "axios";
 import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/index.mjs";
 import { AccountInfo, AuthenticationResult } from "@azure/msal-browser";
 
