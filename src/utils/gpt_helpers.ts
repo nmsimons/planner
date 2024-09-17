@@ -1,9 +1,12 @@
-import { v4 as uuid } from "uuid";
-import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
-import { getJsonSchema } from "@fluidframework/tree/alpha";
-import { Session, Sessions } from "../schema/app_schema.js";
 import Ajv from "ajv";
+import { AzureOpenAI } from "openai";
+import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
+import { v4 as uuid } from "uuid";
+
 import { InsertableTypedNode } from "fluid-framework";
+import { getJsonSchema } from "fluid-framework/alpha";
+
+import { Session, Sessions } from "../schema/app_schema.js";
 
 const sessionsJsonSchema = getJsonSchema(Sessions);
 const jsonValidator = new Ajv.default({ strict: false });
@@ -32,6 +35,7 @@ export function createSessionPrompter(): (
 		);
 	}
 
+	const openai = new AzureOpenAI();
 	const model = createAzureOpenAILanguageModel(apiKey, endpoint);
 	const translator = createJsonTranslator<Sessions>(model, {
 		getTypeName: () => Sessions.identifier,
