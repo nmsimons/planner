@@ -36,9 +36,11 @@ jobs:
           AZURE_TENANT_ID: 96737d25-249e-4453-901d-75b892d0931c
           AZURE_ORDERER: https://us.fluidrelay.azure.com
           FLUID_CLIENT: azure
-          CLIENT_ID: 4b39383d-c477-4d14-8d7d-3336fb7f59cb
-          AZURE_OPENAI_ENDPOINT: https://fhlsep2024.openai.azure.com
+          CLIENT_ID: 34f56a17-24be-4ec3-9709-cc9c04f42f5c
           TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net
+          AZURE_FUNCTION_TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net/api/getafrtoken
+          AZURE_OPENAI_ENDPOINT: https://fhlsep2024.openai.azure.com
+          AZURE_OPENAI_TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net/api/getopenaitoken
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
