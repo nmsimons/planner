@@ -1,7 +1,9 @@
 import { v4 as uuid } from "uuid";
-import { createAzureOpenAILanguageModel, createJsonTranslator } from "typechat";
 import { Session } from "../schema/app_schema.js";
 import { AzureOpenAI } from "openai";
+import axios, { AxiosRequestConfig } from "axios";
+import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/index.mjs";
+import { AccountInfo, AuthenticationResult } from "@azure/msal-browser";
 
 const generatedSchema = `
 interface GeneratedSessions {
@@ -82,9 +84,31 @@ Or, another example, if a user asks for two lectures about raccoons where one is
 }
 `;
 
-export function createSessionPrompter(): (
-	prompt: string,
-) => Promise<Iterable<Session> | undefined> {
+export async function azureOpenAITokenProvider(account: AccountInfo): Promise<string> {
+	const tokenProvider = process.env.AZURE_OPENAI_TOKEN_PROVIDER_URL;
+	if (tokenProvider === undefined || tokenProvider === null) {
+		throw Error(
+			"Expected AZURE_OPENAI_TOKEN_PROVIDER_URL to be set in environment variables or local storage",
+		);
+	}
+
+	const config: AxiosRequestConfig = {
+		headers: {
+			"Content-Type": "application/json",
+			"Authorization": `Bearer ${account.idToken}`,
+		},
+	};
+
+	// get the token from the token provider
+	const response = await axios.get(tokenProvider, config);
+	return response.data as string;
+}
+
+export function createSessionPrompter(
+	account: AccountInfo,
+): (prompt: string) => Promise<Iterable<Session> | undefined> {
+	console.log("Creating Azure OpenAI prompter");
+
 	const endpoint =
 		process.env.AZURE_OPENAI_ENDPOINT ?? localStorage.getItem("AZURE_OPENAI_ENDPOINT");
 
@@ -93,47 +117,34 @@ export function createSessionPrompter(): (
 			"Expected AZURE_OPENAI_ENDPOINT to be set in environment variables or local storage",
 		);
 	}
-	const apiKey = process.env.AZURE_OPENAI_API_KEY ?? localStorage.getItem("AZURE_OPENAI_API_KEY");
 
-	if (apiKey === undefined || apiKey === null) {
-		throw Error(
-			"Expected AZURE_OPENAI_API_KEY to be set in environment variables or local storage",
-		);
-	}
-
-	const openai = new AzureOpenAI();
-	const model = createAzureOpenAILanguageModel(apiKey, endpoint);
-	const translator = createJsonTranslator<GeneratedSessions>(model, {
-		getTypeName: () => "GeneratedSessions",
-		getSchemaText: () => generatedSchema,
-		validate(jsonObject: object) {
-			if (isGeneratedSessions(jsonObject)) {
-				return {
-					success: true,
-					data: jsonObject,
-				};
-			}
-
-			return {
-				success: false,
-				message: "Malformed generated sessions",
-			};
-		},
+	const openai = new AzureOpenAI({
+		azureADTokenProvider: () => azureOpenAITokenProvider(account),
+		apiVersion: "2024-08-01-preview",
 	});
 
+	const body: ChatCompletionCreateParamsNonStreaming = {
+		messages: [
+			{ role: "system", content: sessionSystemPrompt },
+			{ role: "user", content: "I need some session topics for a conference." },
+		],
+		model: "gpt-4o",
+	};
+
 	return async (prompt) => {
+		console.log("Prompting Azure OpenAI with:", prompt);
 		try {
-			const result = await translator.translate(prompt, sessionSystemPrompt);
-			if (!result.success) {
+			const result = await openai.chat.completions.create(body);
+			if (!result.created) {
 				throw new Error("AI did not return result");
 			}
-			const sessions: Session[] = result.data.sessions.map((l) => {
+			const sessions: Session[] = result.choices.map((l) => {
 				const currentTime = new Date().getTime();
 				return new Session({
-					title: l.title,
-					abstract: l.abstract,
+					title: "TEST",
+					abstract: l.message.content as string,
 					created: currentTime,
-					sessionType: l.sessionType,
+					sessionType: sessionTypes[0],
 					lastChanged: currentTime,
 					id: uuid(),
 				});
