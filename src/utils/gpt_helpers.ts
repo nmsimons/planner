@@ -92,15 +92,8 @@ export async function azureOpenAITokenProvider(account: AccountInfo): Promise<st
 		);
 	}
 
-	const config: AxiosRequestConfig = {
-		headers: {
-			"Content-Type": "application/json",
-			"Authorization": `Bearer ${account.idToken}`,
-		},
-	};
-
 	// get the token from the token provider
-	const response = await axios.get(tokenProvider, config);
+	const response = await axios.get(tokenProvider);
 	return response.data as string;
 }
 
