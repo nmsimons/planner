@@ -26,7 +26,7 @@ export async function loadApp(
 
 	const appTree = container.initialObjects.appData.viewWith(appTreeConfiguration);
 	if (appTree.compatibility.canInitialize)
-		appTree.initialize({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 });
+		appTree.initialize({ name: "Life", moment: [], days: [], sessionsPerDay: 4 });
 
 	// create the root element for React
 	const app = document.createElement("div");
@@ -46,7 +46,7 @@ export async function loadApp(
 	root.render(
 		<DndProvider backend={HTML5Backend}>
 			<ReactApp
-				conferenceTree={appTree}
+				lifeTree={appTree}
 				sessionTree={sessionTree}
 				audience={services.audience}
 				container={container}
@@ -64,7 +64,7 @@ export async function loadApp(
 						alert("AI failed to generate sessions. Please try again.");
 						return;
 					}
-					appTree.root.sessions.insertAtEnd(...sessions);
+					appTree.root.moment.insertAtEnd(...sessions);
 				}} // eslint-disable-line @typescript-eslint/no-empty-function
 			/>
 		</DndProvider>,

@@ -57,7 +57,7 @@ module.exports = {
 	plugins: [
 		// No need to write a index.html
 		new HtmlWebpackPlugin({
-			title: "Planner Demo",
+			title: "Something Happened",
 			favicon: "",
 		}),
 		// Load environment variables during webpack bundle

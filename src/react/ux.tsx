@@ -5,7 +5,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useEffect, useState } from "react";
-import { Conference } from "../schema/app_schema.js";
+import { Life } from "../schema/app_schema.js";
 import { ClientSession } from "../schema/session_schema.js";
 import "../output.css";
 import { IFluidContainer, IMember, IServiceAudience, TreeView } from "fluid-framework";
@@ -15,7 +15,7 @@ import Prompt from "./prompt_ux.js";
 import { UserAvatars } from "./avatars_ux.js";
 
 export function ReactApp(props: {
-	conferenceTree: TreeView<typeof Conference>;
+	lifeTree: TreeView<typeof Life>;
 	sessionTree: TreeView<typeof ClientSession>;
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
@@ -47,7 +47,7 @@ export function ReactApp(props: {
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
-						conferenceTree={props.conferenceTree}
+						lifeTree={props.lifeTree}
 						sessionTree={props.sessionTree}
 						audience={props.audience}
 						container={props.container}
@@ -79,9 +79,7 @@ export function Header(props: {
 }): JSX.Element {
 	return (
 		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full">
-			<div className="flex m-2">
-				Planner | {props.saved ? "saved" : "not saved"} | {props.connectionState}
-			</div>
+			<div className="flex m-2">Something Happened | {props.connectionState}</div>
 			<UserAvatars
 				currentUser={props.currentUser}
 				fluidMembers={props.fluidMembers}
