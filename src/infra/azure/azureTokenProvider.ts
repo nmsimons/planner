@@ -68,10 +68,6 @@ export class AzureFunctionTokenProvider implements ITokenProvider {
 			};
 		} else {
 			config = {
-				headers: {
-					"Content-Type": "application/json",
-					"Authorization": `Bearer ${account.idToken}`,
-				},
 				params: {
 					tenantId,
 					documentId,

@@ -38,6 +38,8 @@ jobs:
           AZURE_FUNCTION_TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net/api/getafrtoken
           FLUID_CLIENT: azure
           CLIENT_ID: 4b39383d-c477-4d14-8d7d-3336fb7f59cb
+          AZURE_OPENAI_ENDPOINT: https://fhlsep2024.openai.azure.com
+          AZURE_OPENAI_TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net/api/getopenaitoken
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest
