@@ -1,6 +1,6 @@
 import { AzureClient } from "@fluidframework/azure-client";
 import { loadApp } from "../app_load.js";
-import { clientProps } from "../infra/azure/azureClientProps.js";
+import { getClientProps } from "../infra/azure/azureClientProps.js";
 import { authHelper } from "../infra/spe/authHelper.js";
 import { AuthenticationResult, PublicClientApplication, AccountInfo } from "@azure/msal-browser";
 
@@ -10,7 +10,7 @@ export async function azureStart(account: AccountInfo) {
 	// a new container.
 	let containerId = location.hash.substring(1);
 
-	const client = new AzureClient(clientProps);
+	const client = new AzureClient(getClientProps(account));
 
 	// Load the app
 	const container = await loadApp(client, containerId, account);
@@ -42,7 +42,7 @@ export async function signedInAzureStart() {
 				if (currentAccounts.length === 0) {
 					// no accounts signed-in, attempt to sign a user in
 					msalInstance.loginRedirect({
-						scopes: ["User.Read"],
+						scopes: ["api://fhl-token-provider.azurewebsites.net/Data.Read"],
 					});
 				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
 					// The user is singed in.

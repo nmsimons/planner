@@ -11,6 +11,7 @@ import {
 } from "@fluidframework/azure-client";
 import { InsecureTokenProvider } from "./azureTokenProvider.js";
 import { AzureFunctionTokenProvider, azureUser, user } from "./azureTokenProvider.js";
+import { AccountInfo } from "@azure/msal-browser";
 
 const client = process.env.FLUID_CLIENT;
 const local = client === undefined || client === "local";
@@ -40,3 +41,29 @@ const connectionConfig: AzureRemoteConnectionConfig | AzureLocalConnectionConfig
 export const clientProps: AzureClientProps = {
 	connection: connectionConfig,
 };
+
+export function getClientProps(account: AccountInfo): AzureClientProps {
+	const remoteConnectionConfig: AzureRemoteConnectionConfig = {
+		type: "remote",
+		tenantId: process.env.AZURE_TENANT_ID!,
+		tokenProvider: new AzureFunctionTokenProvider(
+			process.env.AZURE_FUNCTION_TOKEN_PROVIDER_URL!,
+			azureUser,
+			account
+		),
+		endpoint: process.env.AZURE_ORDERER!,
+	};
+	
+	const localConnectionConfig: AzureLocalConnectionConfig = {
+		type: "local",
+		tokenProvider: new InsecureTokenProvider("VALUE_NOT_USED", user),
+		endpoint: "http://localhost:7070",
+	};
+	
+	const connectionConfig: AzureRemoteConnectionConfig | AzureLocalConnectionConfig = !local
+		? remoteConnectionConfig
+		: localConnectionConfig;
+	return {
+		connection: connectionConfig,
+	};
+}

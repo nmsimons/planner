@@ -92,8 +92,22 @@ export async function azureOpenAITokenProvider(account: AccountInfo): Promise<st
 		);
 	}
 
+	const functionTokenResponse = await axios.post(process.env.TOKEN_PROVIDER_URL + '/.auth/login/aad', {
+		access_token: account.idToken
+	});
+
+	if (functionTokenResponse.status !== 200) {
+		throw new Error('Failed to get function token');
+	}
+	const functionToken = functionTokenResponse.data.authenticationToken;
+
 	// get the token from the token provider
-	const response = await axios.get(tokenProvider);
+	const response = await axios.get(tokenProvider, {
+		headers: {
+			"Content-Type": "application/json",
+			"X-ZUMO-AUTH": functionToken,
+		}
+	});
 	return response.data as string;
 }
 
