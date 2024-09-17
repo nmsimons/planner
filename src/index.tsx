@@ -5,7 +5,7 @@
 
 /* eslint-disable react/jsx-key */
 import { speStart } from "./start/spe_start.js";
-import { anonymousAzureStart, signedInAzureStart } from "./start/azure_start.js";
+import { signedInAzureStart } from "./start/azure_start.js";
 
 async function start() {
 	const client = process.env.FLUID_CLIENT;
@@ -19,14 +19,13 @@ async function start() {
 		case "azure":
 			// Start the app in Azure mode
 			if (clientId === undefined) {
-				await anonymousAzureStart();
+				throw new Error("CLIENT_ID is not defined");
 			} else {
 				await signedInAzureStart();
 			}
 			break;
 		default:
-			// Start the app in Azure mode
-			await anonymousAzureStart();
+			throw new Error("CLIENT_ID is not defined");
 			break;
 	}
 }

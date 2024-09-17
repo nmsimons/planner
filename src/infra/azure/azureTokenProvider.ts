@@ -6,10 +6,11 @@
 import { AzureMember, ITokenProvider, ITokenResponse, IUser } from "@fluidframework/azure-client";
 import { ITokenClaims } from "@fluidframework/azure-client/legacy";
 import { ScopeType } from "@fluidframework/protocol-definitions";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import { KJUR as jsrsasign } from "jsrsasign";
 import { v4 as uuid } from "uuid";
 import { uniqueNamesGenerator, names } from "unique-names-generator";
+import { AccountInfo } from "@azure/msal-browser";
 
 /**
  * Insecure user definition.
@@ -34,30 +35,66 @@ export class AzureFunctionTokenProvider implements ITokenProvider {
 	constructor(
 		private readonly azFunctionUrl: string,
 		private readonly user?: Pick<AzureMember, "name" | "id" | "additionalDetails">,
+		private readonly account?: AccountInfo,
 	) {}
 
 	public async fetchOrdererToken(tenantId: string, documentId?: string): Promise<ITokenResponse> {
 		return {
-			jwt: await this.getAfrToken(tenantId, documentId),
+			jwt: await this.getAfrToken(tenantId, documentId, this.account),
 		};
 	}
 
 	public async fetchStorageToken(tenantId: string, documentId: string): Promise<ITokenResponse> {
 		return {
-			jwt: await this.getAfrToken(tenantId, documentId),
+			jwt: await this.getAfrToken(tenantId, documentId, this.account),
 		};
 	}
 
-	private async getAfrToken(tenantId: string, documentId: string | undefined): Promise<string> {
-		const response = await axios.get(this.azFunctionUrl, {
-			params: {
-				tenantId,
-				documentId,
-				userName: this.user?.name,
-				userId: this.user?.id,
-				additionalDetails: this.user?.additionalDetails,
-			},
+	private async getAfrToken(
+		tenantId: string,
+		documentId: string | undefined,
+		account?: AccountInfo,
+	): Promise<string> {
+		if (!account) {
+			throw new Error("Account is required for acquiring AFR token");
+		}
+		const functionTokenResponse = await axios.post(process.env.TOKEN_PROVIDER_URL + '/.auth/login/aad', {
+			access_token: account.idToken
 		});
+
+		if (functionTokenResponse.status !== 200) {
+			throw new Error('Failed to get function token');
+		}
+		const functionToken = functionTokenResponse.data.authenticationToken;
+
+		let config: AxiosRequestConfig;
+		if (!account) {
+			config = {
+				params: {
+					tenantId,
+					documentId,
+					userName: this.user?.name,
+					userId: this.user?.id,
+					additionalDetails: this.user?.additionalDetails,
+				},
+			};
+		} else {
+			config = {
+				headers: {
+					"Content-Type": "application/json",
+					"X-ZUMO-AUTH": functionToken,
+				},
+				params: {
+					tenantId,
+					documentId,
+					userName: this.user?.name,
+					userId: this.user?.id,
+					additionalDetails: this.user?.additionalDetails,
+				},
+			};
+		}
+
+		const response = await axios.get(this.azFunctionUrl, config);
 		return response.data as string;
 	}
 }

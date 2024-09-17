@@ -30,13 +30,15 @@ jobs:
           # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
           app_location: "/" # App source code path
           api_location: "" # Api source code path - optional
-          output_location: "build" # Built app content directory - optional
+          output_location: "dist" # Built app content directory - optional
           ###### End of Repository/Build Configurations ######
         env: # Add environment variables here
           AZURE_TENANT_ID: 96737d25-249e-4453-901d-75b892d0931c
           AZURE_ORDERER: https://us.fluidrelay.azure.com
-          AZURE_FUNCTION_TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net/api/gettoken
           FLUID_CLIENT: azure
+          CLIENT_ID: 4b39383d-c477-4d14-8d7d-3336fb7f59cb
+          AZURE_OPENAI_ENDPOINT: https://fhlsep2024.openai.azure.com
+          TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest

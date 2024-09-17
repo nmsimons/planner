@@ -12,10 +12,12 @@ import { createSessionPrompter } from "./utils/gpt_helpers.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
 import { loadFluidData } from "./infra/fluid.js";
 import { containerSchema } from "./schema/container_schema.js";
+import { AccountInfo } from "@azure/msal-browser";
 
 export async function loadApp(
 	client: AzureClient | OdspClient,
 	containerId: string,
+	account: AccountInfo,
 ): Promise<IFluidContainer> {
 	// Initialize Fluid Container
 	const { services, container } = await loadFluidData(containerId, containerSchema, client);
@@ -54,8 +56,9 @@ export async function loadApp(
 				insertTemplate={async (prompt: string) => {
 					if (prompter === undefined) {
 						try {
-							prompter = createSessionPrompter();
-						} catch {
+							prompter = createSessionPrompter(account);
+						} catch (e) {
+							console.error("Failed to create AI prompter. Please try again.", e);
 							return;
 						}
 					}
