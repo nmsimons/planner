@@ -1,8 +1,8 @@
 import { AzureClient } from "@fluidframework/azure-client";
 import { loadApp } from "../app_load.js";
 import { getClientProps } from "../infra/azure/azureClientProps.js";
-import { authHelper } from "../infra/spe/authHelper.js";
 import { AuthenticationResult, PublicClientApplication, AccountInfo } from "@azure/msal-browser";
+import { getMsalInstance } from "../utils/auth_helpers.js";
 
 export async function azureStart(account: AccountInfo) {
 	// Get the root container id from the URL
@@ -26,7 +26,7 @@ export async function azureStart(account: AccountInfo) {
 }
 
 export async function signedInAzureStart() {
-	const msalInstance: PublicClientApplication = await authHelper();
+	const msalInstance: PublicClientApplication = await getMsalInstance();
 
 	// Handle the login redirect flows
 	msalInstance

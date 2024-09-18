@@ -39,6 +39,7 @@ jobs:
           CLIENT_ID: 34f56a17-24be-4ec3-9709-cc9c04f42f5c
           TOKEN_PROVIDER_URL: https://fhl-token-provider.azurewebsites.net
           AZURE_OPENAI_ENDPOINT: https://fhlsep2024.openai.azure.com
+          TENANT_ID: 72f988bf-86f1-41af-91ab-2d7cd011db47
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
     runs-on: ubuntu-latest

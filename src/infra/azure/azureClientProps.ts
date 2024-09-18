@@ -8,7 +8,6 @@ import {
 	AzureRemoteConnectionConfig,
 	AzureClientProps,
 	AzureLocalConnectionConfig,
-	AzureMember,
 } from "@fluidframework/azure-client";
 import { InsecureTokenProvider } from "./azureTokenProvider.js";
 import { AzureFunctionTokenProvider } from "./azureTokenProvider.js";

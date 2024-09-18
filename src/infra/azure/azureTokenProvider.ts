@@ -11,6 +11,7 @@ import { KJUR as jsrsasign } from "jsrsasign";
 import { v4 as uuid } from "uuid";
 import { uniqueNamesGenerator, names } from "unique-names-generator";
 import { AccountInfo } from "@azure/msal-browser";
+import { getFunctionToken } from "../../utils/auth_helpers.js";
 
 /**
  * Insecure user definition.
@@ -45,17 +46,7 @@ export class AzureFunctionTokenProvider implements ITokenProvider {
 			throw new Error("Account is required for acquiring function token");
 		}
 		if (!this.functionToken) {
-			const functionTokenResponse = await axios.post(
-				process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad",
-				{
-					access_token: this.account.idToken,
-				},
-			);
-
-			if (functionTokenResponse.status !== 200) {
-				throw new Error("Failed to get function token");
-			}
-			this.functionToken = functionTokenResponse.data.authenticationToken;
+			this.functionToken = await getFunctionToken(this.account);
 		}
 	}
 

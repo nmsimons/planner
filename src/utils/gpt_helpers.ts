@@ -11,6 +11,7 @@ import { AccountInfo } from "@azure/msal-browser";
 import { getJsonSchema } from "fluid-framework/alpha";
 
 import Ajv from "ajv";
+import { getFunctionToken } from "./auth_helpers.js";
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
 The "sessionType" is a string that indicates the type of the session. It can be one of 'session', 'keynote', 'panel', or 'workshop'.
@@ -59,17 +60,7 @@ export async function azureOpenAITokenProvider(account: AccountInfo): Promise<st
 		);
 	}
 
-	const functionTokenResponse = await axios.post(
-		process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad",
-		{
-			access_token: account.idToken,
-		},
-	);
-
-	if (functionTokenResponse.status !== 200) {
-		throw new Error("Failed to get function token");
-	}
-	const functionToken = functionTokenResponse.data.authenticationToken;
+	const functionToken = await getFunctionToken(account);
 
 	// get the token from the token provider
 	const response = await axios.get(tokenProvider, {
