@@ -161,6 +161,7 @@ export function createSessionPrompter(
 			});
 			return sessions;
 		} catch (e) {
+			console.error(e);
 			return undefined;
 		}
 	};
