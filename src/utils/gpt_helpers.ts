@@ -1,55 +1,15 @@
 import { v4 as uuid } from "uuid";
-import { Session } from "../schema/app_schema.js";
+import { Session, Sessions } from "../schema/app_schema.js";
 import { AzureOpenAI } from "openai";
 import axios from "axios";
 import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/index.mjs";
 import { AccountInfo } from "@azure/msal-browser";
 
-const generatedSchema = `
-interface GeneratedSessions {
-	sessions: GeneratedSession[];
-}
-interface GeneratedSession {
-	title: string;
-	abstract: string;
-	sessionType: "session" | "workshop" | "panel" | "keynote";
-}
-`;
+import { getJsonSchema } from "fluid-framework/alpha";
 
-interface GeneratedSessions {
-	sessions: GeneratedSession[];
-}
+import Ajv from "ajv";
 
 const sessionTypes = ["session", "workshop", "panel", "keynote"] as const;
-interface GeneratedSession {
-	title: string;
-	abstract: string;
-	sessionType: (typeof sessionTypes)[number];
-}
-
-function isGeneratedSessions(value: object): value is GeneratedSessions {
-	const sessions = value as Partial<GeneratedSessions>;
-	if (!Array.isArray(sessions.sessions)) {
-		return false;
-	}
-
-	for (const session of sessions.sessions) {
-		if (!isGeneratedSession(session)) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
-function isGeneratedSession(value: object): value is GeneratedSession {
-	const session = value as Partial<GeneratedSession>;
-	return (
-		typeof session.title === "string" &&
-		typeof session.abstract === "string" &&
-		sessionTypes.find((s) => s === session.sessionType) !== undefined
-	);
-}
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
 The "sessionType" is a string that indicates the type of the session. It can be one of 'session', 'keynote', 'panel', or 'workshop'.
@@ -83,6 +43,11 @@ Or, another example, if a user asks for two lectures about raccoons where one is
 	"sessionType": "session"
 }
 `;
+
+const sessionsJsonSchema = getJsonSchema(Sessions);
+
+const jsonValidator = new Ajv.default({ strict: false });
+const sessionsSchemaValidator = jsonValidator.compile(sessionsJsonSchema);
 
 export async function azureOpenAITokenProvider(account: AccountInfo): Promise<string> {
 	const tokenProvider = process.env.TOKEN_PROVIDER_URL + "/api/getopenaitoken";
@@ -139,6 +104,13 @@ export function createSessionPrompter(
 			{ role: "user", content: "I need some session topics for a conference." },
 		],
 		model: "gpt-4o",
+		response_format: {
+			type: "json_schema",
+			json_schema: {
+				...sessionsJsonSchema,
+				name: "sessions",
+			},
+		},
 	};
 
 	return async (prompt) => {
@@ -149,6 +121,7 @@ export function createSessionPrompter(
 				throw new Error("AI did not return result");
 			}
 			const sessions: Session[] = result.choices.map((l) => {
+				console.log(l);
 				const currentTime = new Date().getTime();
 				return new Session({
 					title: "TEST",
