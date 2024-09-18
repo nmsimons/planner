@@ -107,8 +107,10 @@ export function createSessionPrompter(
 		response_format: {
 			type: "json_schema",
 			json_schema: {
-				...sessionsJsonSchema,
+				schema: { ...sessionsJsonSchema },
 				name: "sessions",
+				strict: false, // TODO
+				description: "Describes a session for a conference.",
 			},
 		},
 	};
@@ -134,6 +136,7 @@ export function createSessionPrompter(
 			});
 			return sessions;
 		} catch (e) {
+			console.error(e);
 			return undefined;
 		}
 	};
