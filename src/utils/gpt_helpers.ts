@@ -1,15 +1,16 @@
 import { v4 as uuid } from "uuid";
-import { Session, Sessions } from "../schema/app_schema.js";
+import { Session } from "../schema/app_schema.js";
 import { AzureOpenAI } from "openai";
 import axios from "axios";
-import { ChatCompletionCreateParamsNonStreaming } from "openai/resources/index.mjs";
+import {
+	ChatCompletionCreateParamsNonStreaming,
+	ResponseFormatJSONSchema,
+} from "openai/resources/index.mjs";
 import { AccountInfo } from "@azure/msal-browser";
 
 import { getJsonSchema } from "fluid-framework/alpha";
 
 import Ajv from "ajv";
-
-const sessionTypes = ["session", "workshop", "panel", "keynote"] as const;
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
 The "sessionType" is a string that indicates the type of the session. It can be one of 'session', 'keynote', 'panel', or 'workshop'.
@@ -44,10 +45,11 @@ Or, another example, if a user asks for two lectures about raccoons where one is
 }
 `;
 
-const sessionsJsonSchema = getJsonSchema(Sessions);
+const sessionJsonSchema = getJsonSchema(Session);
+console.log("Generated JSON Schema: ", sessionJsonSchema);
 
 const jsonValidator = new Ajv.default({ strict: false });
-const sessionsSchemaValidator = jsonValidator.compile(sessionsJsonSchema);
+const validateSession = jsonValidator.compile<Session>(sessionJsonSchema);
 
 export async function azureOpenAITokenProvider(account: AccountInfo): Promise<string> {
 	const tokenProvider = process.env.TOKEN_PROVIDER_URL + "/api/getopenaitoken";
@@ -98,42 +100,82 @@ export function createSessionPrompter(
 		apiVersion: "2024-08-01-preview",
 	});
 
-	const body: ChatCompletionCreateParamsNonStreaming = {
-		messages: [
-			{ role: "system", content: sessionSystemPrompt },
-			{ role: "user", content: "I need some session topics for a conference." },
-		],
-		model: "gpt-4o",
-		response_format: {
-			type: "json_schema",
-			json_schema: {
-				schema: { ...sessionsJsonSchema },
-				name: "sessions",
-				strict: false, // TODO
-				description: "Describes a session for a conference.",
+	// OpenAI requires that the schema root be an object.
+	// To accommodate, we'll do some surgery to craft a schema that fits their expectations.
+	// Namely: create a root property called "session-list" that takes an array of sessions.
+	const requestSchema: ResponseFormatJSONSchema.JSONSchema = {
+		schema: {
+			type: "object",
+			$defs: sessionJsonSchema.$defs, // Defs must be at the root
+			properties: {
+				"session-list": {
+					type: "array",
+					description: "A list of conference sessions.",
+					items: {
+						// Our schema is not polymorphic, so it will always have a `$ref` property (rather than `anyOf`).
+						$ref: (sessionJsonSchema as any).$ref,
+					},
+				},
 			},
+			additionalProperties: false,
+			required: ["session-list"],
 		},
+		name: "session-list-response",
+		strict: true,
 	};
+
+	console.log("Request Schema: ", requestSchema);
 
 	return async (prompt) => {
 		console.log("Prompting Azure OpenAI with:", prompt);
+
+		const body: ChatCompletionCreateParamsNonStreaming = {
+			messages: [
+				{ role: "system", content: sessionSystemPrompt },
+				{ role: "user", content: prompt },
+			],
+			model: "gpt-4o",
+			response_format: {
+				type: "json_schema",
+				json_schema: requestSchema,
+			},
+		};
+
 		try {
 			const result = await openai.chat.completions.create(body);
 			if (!result.created) {
 				throw new Error("AI did not return result");
 			}
-			const sessions: Session[] = result.choices.map((l) => {
-				console.log(l);
+			if (result.choices.length === 0) {
+				throw new Error("AI result contained no choices");
+			}
+			if (result.choices[0].finish_reason !== "stop") {
+				return undefined;
+			}
+
+			if (!result.choices[0].message.content) {
+				throw new Error("AI result contained no content");
+			}
+
+			const sessions: Session[] = [];
+			const resultJson = JSON.parse(result.choices[0].message.content);
+
+			const generatedSessionList = resultJson["session-list"] as unknown[];
+			for (const generatedSession of generatedSessionList) {
+				validateSession(generatedSession);
 				const currentTime = new Date().getTime();
-				return new Session({
-					title: "TEST",
-					abstract: l.message.content as string,
-					created: currentTime,
-					sessionType: sessionTypes[0],
-					lastChanged: currentTime,
-					id: uuid(),
-				});
-			});
+				sessions.push(
+					new Session({
+						// Since we gave the entire Session schema, the AI will be generating some values we don't want (timestamp, id, etc.).
+						// We will override those with our own.
+						...(generatedSession as Session),
+						created: currentTime,
+						lastChanged: currentTime,
+						id: uuid(),
+					}),
+				);
+			}
+
 			return sessions;
 		} catch (e) {
 			console.error(e);
