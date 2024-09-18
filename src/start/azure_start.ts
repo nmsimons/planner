@@ -45,6 +45,7 @@ export async function signedInAzureStart() {
 						scopes: [
 							"user.read",
 							"api://fhl-token-provider.azurewebsites.net/Data.Read",
+							"offline_access",
 						],
 					});
 				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {

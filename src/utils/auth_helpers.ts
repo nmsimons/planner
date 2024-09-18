@@ -6,6 +6,8 @@ export async function getFunctionToken(account: AccountInfo) {
 		throw new Error("Account is required for acquiring function token");
 	}
 
+	console.log();
+
 	const functionTokenResponse = await axios.post(
 		process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad",
 		{
