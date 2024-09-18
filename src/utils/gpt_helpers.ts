@@ -55,6 +55,7 @@ function isGeneratedSession(value: object): value is GeneratedSession {
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
 The "sessionType" is a string that indicates the type of the session. It can be one of 'session', 'keynote', 'panel', or 'workshop'.
 For example, if a user asks for three lectures about green energy, you might output:
+[
 {
 	"title": "Wind Power",
 	"abstract": "Dr. Alexander Pardes provides an analysis of the latest wind turbine designs and how they've improved upon existing technologies.",
@@ -70,9 +71,10 @@ For example, if a user asks for three lectures about green energy, you might out
 	"abstract": "Several leading scientists discuss how we can tap the pressure differentials in the earth's crust to generate 'friction-energy', a technique that has only recently moved beyond pure theoretical speculation.",
 	"sessionType": "session"
 }
-
+]
 
 Or, another example, if a user asks for two lectures about raccoons where one is a keynote, you might output:
+[
 {
 	"title": "Furry Friends or Furious Foes?",
 	"abstract": "Raccoon banditry is on the rise and homeowners aren't happy. However, with a few adjustments to our behavior, we can make a welcoming space for these critters rather than being their enemy.",
@@ -83,6 +85,7 @@ Or, another example, if a user asks for two lectures about raccoons where one is
 	"abstract": "Thanks to their opposable thumbs, raccoons are capable of enjoying chew toys that are significantly more complex than those made for cats and docs. We'll discuss how and why raccoons need more interesting toy designs, and what that means for current trends in chew toy manufacturing.",
 	"sessionType": "session"
 }
+]
 `;
 
 export async function azureOpenAITokenProvider(account: AccountInfo): Promise<string> {
@@ -142,23 +145,26 @@ export function createSessionPrompter(
 	return async (prompt) => {
 		console.log("Prompting Azure OpenAI with:", prompt);
 		try {
+			body.messages.push({ role: "user", content: prompt });
 			const result = await openai.chat.completions.create(body);
 			if (!result.created) {
 				throw new Error("AI did not return result");
 			}
-			const sessions: Moment[] = result.choices.map((l) => {
+
+			const suggestions: { title: string; abstract: string; sessionType: string }[] = JSON.parse(result.choices[0].message.content as string);
+			const moments: Moment[] = suggestions.map((s) => {
 				const currentTime = new Date().getTime();
 				return new Moment({
-					title: "FROM CHAT PROMPT",
-					abstract: l.message.content as string,
+					title: s.title,
+					abstract: s.abstract + "\n\n" + `(from ${prompt})`,
 					created: currentTime,
-					sessionType: sessionTypes[0],
+					sessionType: s.sessionType,
 					lastChanged: currentTime,
 					id: uuid(),
 					tags: [],
 				});
 			});
-			return sessions;
+			return moments;
 		} catch (e) {
 			return undefined;
 		}
