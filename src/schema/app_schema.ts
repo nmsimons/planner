@@ -10,7 +10,7 @@ import { v4 as uuid } from "uuid";
 // as list and map nodes.
 
 // Include a UUID to guarantee that this schema will be uniquely identifiable.
-const sf = new SchemaFactory("a7245fab-24f7-489d-a726-4ff3ee793719");
+const sf = new SchemaFactory("Planner");
 
 // Define the schema for the session object.
 // Helper functions for working with the data contained in this object
