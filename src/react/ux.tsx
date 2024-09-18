@@ -33,6 +33,19 @@ export function ReactApp(props: {
 		return props.undoRedo.dispose;
 	}, []);
 
+	/** Update the fluidMembers array whenever the audience changes */
+	useEffect(() => {
+		// convert the audience values to an array of IMember objects
+		setFluidMembers(Array.from(props.audience.getMembers().values()));
+		setCurrentUser(props.audience.getMyself());
+		// subscribe to audience changes
+		props.audience.on("membersChanged", () => {
+			// convert the audience values to an array of IMember objects
+			setFluidMembers(Array.from(props.audience.getMembers().values()));
+			setCurrentUser(props.audience.getMyself());
+		});
+	}, []);
+
 	return (
 		<>
 			<div

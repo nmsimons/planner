@@ -47,14 +47,8 @@ export function UserAvatars(props: {
 		isAzureUser = true;
 	}
 
-	// Remove the currentUser from the fluidMembers array based on userId
-	// This is done to prevent the currentUser from appearing in the AvatarGroup
-	const filteredMembers = props.fluidMembers.filter(
-		(member) => member.id !== props.currentUser?.id,
-	);
-
 	const { inlineItems, overflowItems } = partitionAvatarGroupItems({
-		items: filteredMembers,
+		items: props.fluidMembers,
 	});
 
 	const getUserName = (member: IMember, isAzureUser: boolean) => {
