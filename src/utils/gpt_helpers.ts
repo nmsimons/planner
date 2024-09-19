@@ -113,7 +113,7 @@ export function createSessionPrompter(
 			required: ["session-list"],
 		},
 		name: "session-list-response",
-		strict: true,
+		strict: true, // opt-in to structured output
 	};
 
 	console.log("Request Schema: ", requestSchema);
