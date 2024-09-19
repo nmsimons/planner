@@ -1,24 +1,25 @@
 import { AccountInfo, PublicClientApplication } from "@azure/msal-browser";
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 
-export async function getFunctionToken(account: AccountInfo) {
+export async function getFunctionToken(account: AccountInfo, noRetry?: boolean): Promise<string> {
 	if (!account) {
 		throw new Error("Account is required for acquiring function token");
 	}
 
-	console.log();
+	const response = await axios.post(process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad", {
+		access_token: account.idToken,
+	});
 
-	const functionTokenResponse = await axios.post(
-		process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad",
-		{
-			access_token: account.idToken,
-		},
-	);
+	if (response.status === 401 && !noRetry) {
+		// refresh token and retry
+		axios.get(process.env.TOKEN_PROVIDER_URL + "/.auth/refresh");
+		getFunctionToken(account, true);
+	}
 
-	if (functionTokenResponse.status !== 200) {
+	if (response.status !== 200) {
 		throw new Error("Failed to get function token");
 	}
-	return functionTokenResponse.data.authenticationToken;
+	return response.data.authenticationToken;
 }
 
 // Helper function to authenticate the user
@@ -44,4 +45,25 @@ export async function getMsalInstance(): Promise<PublicClientApplication> {
 	await msalInstance.initialize();
 
 	return msalInstance;
+}
+
+// Call axios to get a token from the token provider
+export async function getAccessToken(
+	url: string,
+	noRetry?: boolean,
+	config?: AxiosRequestConfig,
+): Promise<string> {
+	const response = await axios.get(url, config);
+
+	if (response.status === 401 && !noRetry) {
+		// refresh token and retry
+		axios.get(process.env.TOKEN_PROVIDER_URL + "/.auth/refresh");
+		getAccessToken(url, true, config);
+	}
+
+	if (response.status !== 200) {
+		throw new Error("Failed to get access token");
+	}
+
+	return response.data as string;
 }

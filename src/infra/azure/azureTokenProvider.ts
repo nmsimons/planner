@@ -11,7 +11,7 @@ import { KJUR as jsrsasign } from "jsrsasign";
 import { v4 as uuid } from "uuid";
 import { uniqueNamesGenerator, names } from "unique-names-generator";
 import { AccountInfo } from "@azure/msal-browser";
-import { getFunctionToken } from "../../utils/auth_helpers.js";
+import { getAccessToken, getFunctionToken } from "../../utils/auth_helpers.js";
 
 /**
  * Insecure user definition.
@@ -102,8 +102,8 @@ export class AzureFunctionTokenProvider implements ITokenProvider {
 			};
 		}
 
-		const response = await axios.get(this.azFunctionUrl, config);
-		return response.data as string;
+		const token = await getAccessToken(this.azFunctionUrl, false, config);
+		return token;
 	}
 }
 
