@@ -11,7 +11,8 @@ import {
 } from "@fluidframework/azure-client";
 import { InsecureTokenProvider } from "./azureTokenProvider.js";
 import { AzureFunctionTokenProvider } from "./azureTokenProvider.js";
-import { AccountInfo } from "@azure/msal-browser";
+import { AccountInfo, PublicClientApplication } from "@azure/msal-browser";
+import { getAccount, getSessionToken } from "../../utils/auth_helpers.js";
 
 const client = process.env.FLUID_CLIENT;
 const local = client === undefined || client === "local";
@@ -19,12 +20,18 @@ if (local) {
 	console.warn(`Configured to use local tinylicious.`);
 }
 
-export function getClientProps(account: AccountInfo): AzureClientProps {
+export async function getClientProps(
+	msalInstance: PublicClientApplication,
+): Promise<AzureClientProps> {
+	const account = getAccount(msalInstance);
+
 	const user = {
 		name: account.name ?? account.username,
 		id: account.localAccountId,
 		additionalDetails: { email: account.username },
 	};
+
+	const sessionToken = await getSessionToken(msalInstance, false);
 
 	const remoteConnectionConfig: AzureRemoteConnectionConfig = {
 		type: "remote",
@@ -32,7 +39,7 @@ export function getClientProps(account: AccountInfo): AzureClientProps {
 		tokenProvider: new AzureFunctionTokenProvider(
 			process.env.TOKEN_PROVIDER_URL! + "/api/getAfrToken",
 			user,
-			account,
+			sessionToken,
 		),
 		endpoint: process.env.AZURE_ORDERER!,
 	};

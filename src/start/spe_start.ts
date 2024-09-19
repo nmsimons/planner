@@ -115,7 +115,7 @@ async function signedInSpeStart(msalInstance: PublicClientApplication, account: 
 	const client = new OdspClient(clientProps);
 
 	// Load the app
-	const container = await loadApp(client, containerId, account);
+	const container = await loadApp(client, containerId, msalInstance);
 
 	// If the app is in a `createNew` state - no containerId, and the container is detached, we attach the container.
 	// This uploads the container to the service and connects to the collaboration session.

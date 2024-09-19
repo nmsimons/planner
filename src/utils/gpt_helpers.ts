@@ -1,17 +1,16 @@
 import { v4 as uuid } from "uuid";
 import { Session } from "../schema/app_schema.js";
 import { AzureOpenAI } from "openai";
-import axios from "axios";
 import {
 	ChatCompletionCreateParamsNonStreaming,
 	ResponseFormatJSONSchema,
 } from "openai/resources/index.mjs";
-import { AccountInfo } from "@azure/msal-browser";
+import { PublicClientApplication } from "@azure/msal-browser";
 
 import { getJsonSchema } from "fluid-framework/alpha";
 
 import Ajv from "ajv";
-import { getAccessToken, getFunctionToken } from "./auth_helpers.js";
+import { getAccessToken, getAccount, getSessionToken } from "./auth_helpers.js";
 
 const sessionSystemPrompt = `You are a service named Copilot that takes a user prompt and generates session topics for a "speaking event" scheduling application.
 The "sessionType" is a string that indicates the type of the session. It can be one of 'session', 'keynote', 'panel', or 'workshop'.
@@ -52,7 +51,9 @@ console.log("Generated JSON Schema: ", sessionJsonSchema);
 const jsonValidator = new Ajv.default({ strict: false });
 const validateSession = jsonValidator.compile<Session>(sessionJsonSchema);
 
-export async function azureOpenAITokenProvider(account: AccountInfo): Promise<string> {
+export async function azureOpenAITokenProvider(
+	msalInstance: PublicClientApplication,
+): Promise<string> {
 	const tokenProvider = process.env.TOKEN_PROVIDER_URL + "/api/getopenaitoken";
 	if (tokenProvider === undefined || tokenProvider === null) {
 		throw Error(
@@ -60,13 +61,13 @@ export async function azureOpenAITokenProvider(account: AccountInfo): Promise<st
 		);
 	}
 
-	const functionToken = await getFunctionToken(account);
+	const sessionToken = await getSessionToken(msalInstance);
 
 	// get the token from the token provider
 	const token = await getAccessToken(tokenProvider, false, {
 		headers: {
 			"Content-Type": "application/json",
-			"X-ZUMO-AUTH": functionToken,
+			"X-ZUMO-AUTH": sessionToken,
 		},
 	});
 
@@ -74,7 +75,7 @@ export async function azureOpenAITokenProvider(account: AccountInfo): Promise<st
 }
 
 export function createSessionPrompter(
-	account: AccountInfo,
+	msalInstance: PublicClientApplication,
 ): (prompt: string) => Promise<Iterable<Session> | undefined> {
 	console.log("Creating Azure OpenAI prompter");
 
@@ -88,7 +89,7 @@ export function createSessionPrompter(
 	}
 
 	const openai = new AzureOpenAI({
-		azureADTokenProvider: () => azureOpenAITokenProvider(account),
+		azureADTokenProvider: () => azureOpenAITokenProvider(msalInstance),
 		apiVersion: "2024-08-01-preview",
 	});
 

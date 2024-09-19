@@ -1,28 +1,91 @@
-import { AccountInfo, PublicClientApplication } from "@azure/msal-browser";
+import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 import axios, { AxiosRequestConfig } from "axios";
 
-export async function getFunctionToken(account: AccountInfo, noRetry?: boolean): Promise<string> {
-	if (!account) {
-		throw new Error("Account is required for acquiring function token");
+export async function login(msalInstance: PublicClientApplication): Promise<void> {
+	msalInstance
+		.handleRedirectPromise()
+		.then((tokenResponse: AuthenticationResult | null) => {
+			// If the tokenResponse is not null, then the user is signed in
+			// and the tokenResponse is the result of the redirect.
+			if (tokenResponse !== null) {
+				return;
+			} else {
+				const currentAccounts = msalInstance.getAllAccounts();
+				if (currentAccounts.length === 0) {
+					// no accounts signed-in, attempt to sign a user in
+					msalInstance.loginRedirect({
+						scopes: [
+							"user.read",
+							"api://fhl-token-provider.azurewebsites.net/Data.Read",
+							"api://fhl-token-provider.azurewebsites.net/offline_access",
+							"offline_access",
+						],
+					});
+				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
+					// The user is signed in.
+					// Treat more than one account signed in and a single account the same as
+					// this is just a sample. But a real app would need to handle the multiple accounts case.
+					// For now, just use the first account.
+					return;
+				}
+			}
+		})
+		.catch((error: Error) => {
+			console.log("Error in handleRedirectPromise: " + error.message);
+		});
+}
+
+// force refresh of AAD tokens
+export async function refresh(msalInstance: PublicClientApplication): Promise<void> {
+	if (msalInstance.getAllAccounts().length === 0) {
+		login(msalInstance);
 	}
+
+	msalInstance.setActiveAccount(getAccount(msalInstance));
+
+	await msalInstance.acquireTokenSilent({
+		scopes: [
+			"user.read",
+			"api://fhl-token-provider.azurewebsites.net/Data.Read",
+			"api://fhl-token-provider.azurewebsites.net/offline_access",
+			"offline_access",
+		],
+	});
+}
+
+export function getAccount(msalInstance: PublicClientApplication): AccountInfo {
+	const accounts = msalInstance.getAllAccounts();
+	if (accounts.length === 0) {
+		throw new Error("No accounts signed in");
+	}
+	return accounts[0];
+}
+
+export async function getSessionToken(
+	msalInstance: PublicClientApplication,
+	noRetry?: boolean,
+): Promise<string> {
+	const account = getAccount(msalInstance);
 
 	const response = await axios
 		.post(process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad", {
 			access_token: account.idToken,
 		})
 		.catch(async (error) => {
-			if (error.response && error.response.status === 401) {
+			if (error.response && error.response.status === 401 && !noRetry) {
 				// refresh token and retry
-				await axios.get(process.env.TOKEN_PROVIDER_URL + "/.auth/refresh");
-				return getFunctionToken(account, true);
+				await refresh(msalInstance);
+				return getSessionToken(msalInstance, true);
 			} else {
-				throw new Error("Failed to get function token");
+				throw new Error("Failed to get session token");
 			}
 		});
 
 	if (typeof response === "string") {
-		throw new Error("Failed to get function token");
+		throw new Error("Failed to get session token");
 	}
+
+	sessionStorage.setItem("sessionToken", response.data.authenticationToken);
 
 	return response.data.authenticationToken;
 }
@@ -59,12 +122,6 @@ export async function getAccessToken(
 	config?: AxiosRequestConfig,
 ): Promise<string> {
 	const response = await axios.get(url, config);
-
-	if (response.status === 401 && !noRetry) {
-		// refresh token and retry
-		axios.get(process.env.TOKEN_PROVIDER_URL + "/.auth/refresh");
-		getAccessToken(url, true, config);
-	}
 
 	if (response.status !== 200) {
 		throw new Error("Failed to get access token");
