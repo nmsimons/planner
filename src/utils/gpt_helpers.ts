@@ -92,20 +92,21 @@ export function createSessionPrompter(
 		apiVersion: "2024-08-01-preview",
 	});
 
+	const { $defs, ...sessionJsonSchemaWithoutDefs } = sessionJsonSchema;
+
 	// OpenAI requires that the schema root be an object.
 	// To accommodate, we'll do some surgery to craft a schema that fits their expectations.
 	// Namely: create a root property called "session-list" that takes an array of sessions.
 	const requestSchema: ResponseFormatJSONSchema.JSONSchema = {
 		schema: {
 			type: "object",
-			$defs: sessionJsonSchema.$defs, // Defs must be at the root
+			$defs: $defs, // Defs must be at the root
 			properties: {
 				"session-list": {
 					type: "array",
 					description: "A list of conference sessions.",
 					items: {
-						// Our schema is not polymorphic, so it will always have a `$ref` property (rather than `anyOf`).
-						$ref: (sessionJsonSchema as any).$ref,
+						...sessionJsonSchemaWithoutDefs,
 					},
 				},
 			},
