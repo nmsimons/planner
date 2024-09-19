@@ -8,7 +8,7 @@ export async function login(msalInstance: PublicClientApplication): Promise<void
 			// If the tokenResponse is not null, then the user is signed in
 			// and the tokenResponse is the result of the redirect.
 			if (tokenResponse !== null) {
-				return;
+				msalInstance.setActiveAccount(tokenResponse.account);
 			} else {
 				const currentAccounts = msalInstance.getAllAccounts();
 				if (currentAccounts.length === 0) {
@@ -22,8 +22,7 @@ export async function login(msalInstance: PublicClientApplication): Promise<void
 						],
 					});
 				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
-					// The user is signed in.
-					return;
+					msalInstance.setActiveAccount(currentAccounts[0]);
 				}
 			}
 		})
@@ -38,7 +37,7 @@ export async function refresh(msalInstance: PublicClientApplication): Promise<vo
 		login(msalInstance);
 	}
 
-	msalInstance.setActiveAccount(getAccount(msalInstance));
+	msalInstance.setActiveAccount(await getAccount(msalInstance));
 
 	await msalInstance.acquireTokenSilent({
 		scopes: [
@@ -50,19 +49,20 @@ export async function refresh(msalInstance: PublicClientApplication): Promise<vo
 	});
 }
 
-export function getAccount(msalInstance: PublicClientApplication): AccountInfo {
-	const accounts = msalInstance.getAllAccounts();
-	if (accounts.length === 0) {
+export async function getAccount(msalInstance: PublicClientApplication): Promise<AccountInfo> {
+	const currentAccounts = msalInstance.getAllAccounts();
+	if (currentAccounts.length === 0) {
+		console.error("No accounts found trying to login");
 		login(msalInstance);
 	}
-	return accounts[0];
+	return msalInstance.getActiveAccount() ?? currentAccounts[0];
 }
 
 export async function getSessionToken(
 	msalInstance: PublicClientApplication,
 	noRetry?: boolean,
 ): Promise<string> {
-	const account = getAccount(msalInstance);
+	const account = await getAccount(msalInstance);
 
 	const response = await axios
 		.post(process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad", {

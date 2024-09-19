@@ -11,7 +11,7 @@ import {
 } from "@fluidframework/azure-client";
 import { InsecureTokenProvider } from "./azureTokenProvider.js";
 import { AzureFunctionTokenProvider } from "./azureTokenProvider.js";
-import { AccountInfo, PublicClientApplication } from "@azure/msal-browser";
+import { PublicClientApplication } from "@azure/msal-browser";
 import { getAccount, getSessionToken } from "../../utils/auth_helpers.js";
 
 const client = process.env.FLUID_CLIENT;
@@ -23,7 +23,11 @@ if (local) {
 export async function getClientProps(
 	msalInstance: PublicClientApplication,
 ): Promise<AzureClientProps> {
-	const account = getAccount(msalInstance);
+	const account = await getAccount(msalInstance);
+
+	if (!account) {
+		throw new Error("No account found dammit. Refreshing the page will fix this.");
+	}
 
 	const user = {
 		name: account.name ?? account.username,
