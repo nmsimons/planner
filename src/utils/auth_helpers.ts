@@ -23,9 +23,6 @@ export async function login(msalInstance: PublicClientApplication): Promise<void
 					});
 				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
 					// The user is signed in.
-					// Treat more than one account signed in and a single account the same as
-					// this is just a sample. But a real app would need to handle the multiple accounts case.
-					// For now, just use the first account.
 					return;
 				}
 			}
@@ -56,7 +53,7 @@ export async function refresh(msalInstance: PublicClientApplication): Promise<vo
 export function getAccount(msalInstance: PublicClientApplication): AccountInfo {
 	const accounts = msalInstance.getAllAccounts();
 	if (accounts.length === 0) {
-		throw new Error("No accounts signed in");
+		login(msalInstance);
 	}
 	return accounts[0];
 }
