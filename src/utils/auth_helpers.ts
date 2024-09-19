@@ -6,19 +6,24 @@ export async function getFunctionToken(account: AccountInfo, noRetry?: boolean):
 		throw new Error("Account is required for acquiring function token");
 	}
 
-	const response = await axios.post(process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad", {
-		access_token: account.idToken,
-	});
+	const response = await axios
+		.post(process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad", {
+			access_token: account.idToken,
+		})
+		.catch(async (error) => {
+			if (error.response && error.response.status === 401) {
+				// refresh token and retry
+				await axios.get(process.env.TOKEN_PROVIDER_URL + "/.auth/refresh");
+				return getFunctionToken(account, true);
+			} else {
+				throw new Error("Failed to get function token");
+			}
+		});
 
-	if (response.status === 401 && !noRetry) {
-		// refresh token and retry
-		axios.get(process.env.TOKEN_PROVIDER_URL + "/.auth/refresh");
-		getFunctionToken(account, true);
-	}
-
-	if (response.status !== 200) {
+	if (typeof response === "string") {
 		throw new Error("Failed to get function token");
 	}
+
 	return response.data.authenticationToken;
 }
 
