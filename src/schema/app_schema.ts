@@ -4,7 +4,6 @@
  */
 
 import { TreeViewConfiguration, SchemaFactory, Tree } from "fluid-framework";
-import { v4 as uuid } from "uuid";
 
 // Schema is defined using a factory object that generates classes for objects as well
 // as list and map nodes.
@@ -20,7 +19,7 @@ export class Session extends sf.object(
 	// Fields for sessions which SharedTree will store and synchronize across clients.
 	// These fields are exposed as members of instances of the Session class.
 	{
-		id: sf.string,
+		id: sf.identifier,
 		title: sf.string,
 		abstract: sf.string,
 		sessionType: sf.string,
@@ -71,7 +70,6 @@ export class Sessions extends sf.array("Sessions", Session) {
 	public addSession() {
 		const currentTime = new Date().getTime();
 		const session = new Session({
-			id: uuid(),
 			title: "New Session",
 			abstract: "New Abstract",
 			sessionType: "session",
