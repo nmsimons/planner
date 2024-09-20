@@ -8,12 +8,10 @@ export async function login(msalInstance: PublicClientApplication): Promise<void
 			// If the tokenResponse is not null, then the user is signed in
 			// and the tokenResponse is the result of the redirect.
 			if (tokenResponse !== null) {
-				console.log("User is signed in (TokenResponse): ", tokenResponse.account.username);
 				msalInstance.setActiveAccount(tokenResponse.account);
 			} else {
 				const currentAccounts = msalInstance.getAllAccounts();
 				if (currentAccounts.length === 0) {
-					console.log("No accounts found. Trying to login. (loginRedirect)");
 					// no accounts signed-in, attempt to sign a user in
 					msalInstance.loginRedirect({
 						scopes: [
@@ -24,23 +22,26 @@ export async function login(msalInstance: PublicClientApplication): Promise<void
 						],
 					});
 				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
-					console.log("User is already signed in: ", currentAccounts[0].username);
 					msalInstance.setActiveAccount(currentAccounts[0]);
 				}
 			}
 		})
 		.catch((error: Error) => {
-			console.log("Error in handleRedirectPromise: " + error.message);
+			console.error("Error in handleRedirectPromise: " + error.message);
 		});
 }
 
 // force refresh of AAD tokens
 export async function refresh(msalInstance: PublicClientApplication): Promise<void> {
-	if (msalInstance.getAllAccounts().length === 0) {
-		login(msalInstance);
+	// If there are no signed-in accounts, attempt to sign in a user
+	if (msalInstance.getActiveAccount() === null) {
+		await login(msalInstance);
 	}
 
-	msalInstance.setActiveAccount(await getAccount(msalInstance));
+	if (msalInstance.getActiveAccount() === null) {
+		console.error("No active account found after login");
+		return;
+	}
 
 	await msalInstance.acquireTokenSilent({
 		scopes: [
@@ -53,11 +54,13 @@ export async function refresh(msalInstance: PublicClientApplication): Promise<vo
 }
 
 export async function getAccount(msalInstance: PublicClientApplication): Promise<AccountInfo> {
+	// Get the signed-in accounts
 	const currentAccounts = msalInstance.getAllAccounts();
+	// If there are no signed-in accounts, attempt to sign a user in
 	if (currentAccounts.length === 0) {
-		console.error("No accounts found trying to login");
 		login(msalInstance);
 	}
+	// If there is one account, return it or just return the first one
 	return msalInstance.getActiveAccount() ?? currentAccounts[0];
 }
 
