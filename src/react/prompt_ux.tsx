@@ -1,3 +1,4 @@
+import def from "ajv/dist/vocabularies/applicator/additionalItems.js";
 import React, { useState } from "react";
 
 export function HeaderPrompt(props: {
@@ -5,11 +6,13 @@ export function HeaderPrompt(props: {
 }): JSX.Element {
 	const placeholderType = "Type here to talk to a robot...";
 	const placeholderTalk = "Talking to a robot...";
+	const buttonDefaultColor = "bg-gray-500";
 	const [promptText, setPromptText] = useState("");
 	const [templatePrompt, setTemplatePrompt] = useState("");
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 	const [buttonPrompt, setButtonPrompt] = useState("Talk");
 	const [placeholder, setPlaceholder] = useState(placeholderType);
+	const [buttonColor, setButtonColor] = useState(buttonDefaultColor);
 
 	return (
 		<div className="h-full w-full flex flex-row items-center gap-2">
@@ -31,7 +34,7 @@ export function HeaderPrompt(props: {
 			</div>
 			<div className="flex h-fit w-fit">
 				<button
-					className="bg-gray-500 hover:bg-gray-800 text-white font-bold w-20 h-full py-1 px-2 rounded"
+					className={`${buttonColor} hover:bg-gray-800 text-white font-bold w-20 h-full py-1 px-2 rounded`}
 					id="insertTemplateButton"
 					onClick={() => {
 						if (isLoadingTemplate) {
@@ -42,8 +45,10 @@ export function HeaderPrompt(props: {
 							setButtonPrompt("Cancel");
 							setPlaceholder(placeholderTalk);
 							setPromptText("");
+							setButtonColor("bg-red-500");
 							console.log("Inserting template: " + templatePrompt);
 							props.insertTemplate(templatePrompt).then(() => {
+								setButtonColor(buttonDefaultColor);
 								setIsLoadingTemplate(false);
 								setButtonPrompt("Talk");
 								setPlaceholder(placeholderType);
