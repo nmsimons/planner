@@ -11,7 +11,6 @@ import "../output.css";
 import { IFluidContainer, IMember, IServiceAudience, TreeView } from "fluid-framework";
 import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
-import { Prompt } from "./prompt_ux.js";
 import { Header } from "./header_ux.js";
 
 export function ReactApp(props: {
@@ -26,7 +25,6 @@ export function ReactApp(props: {
 	const [connectionState, setConnectionState] = useState("");
 	const [saved, setSaved] = useState(false);
 	const [fluidMembers, setFluidMembers] = useState<IMember[]>([]);
-	const [isPromptOpen, setIsPromptOpen] = useState(false);
 
 	/** Unsubscribe to undo-redo events when the component unmounts */
 	useEffect(() => {
@@ -72,15 +70,9 @@ export function ReactApp(props: {
 						setConnectionState={setConnectionState}
 						setSaved={setSaved}
 						setFluidMembers={setFluidMembers}
-						setShowPrompt={setIsPromptOpen}
 					/>
 				</div>
 			</div>
-			<Prompt
-				insertTemplate={props.insertTemplate}
-				isOpen={isPromptOpen}
-				setIsOpen={setIsPromptOpen}
-			/>
 		</>
 	);
 }

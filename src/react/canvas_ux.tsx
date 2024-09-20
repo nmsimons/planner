@@ -42,7 +42,6 @@ export function Canvas(props: {
 	setConnectionState: (arg: string) => void;
 	setSaved: (arg: boolean) => void;
 	setFluidMembers: (arg: IMember[]) => void;
-	setShowPrompt: (arg: boolean) => void;
 	showBorder?: boolean;
 }): JSX.Element {
 	const [invalidations, setInvalidations] = useState(0);
@@ -127,19 +126,11 @@ export function Canvas(props: {
 						clientId={clientId}
 					/>
 				</ButtonGroup>
-				<Divider />
 				<ButtonGroup>
 					<DeleteSessionsButton
 						conference={props.conferenceTree.root}
 						clientId={clientId}
 					/>
-				</ButtonGroup>
-				<Divider />
-				<ButtonGroup>
-					<ShowPromptButton show={props.setShowPrompt} />
-				</ButtonGroup>
-				<Divider />
-				<ButtonGroup>
 					<UndoButton undo={() => props.undoRedo.undo()} />
 					<RedoButton redo={() => props.undoRedo.redo()} />
 				</ButtonGroup>
