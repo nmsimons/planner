@@ -28,7 +28,12 @@ export async function loadApp(
 
 	const appTree = container.initialObjects.appData.viewWith(appTreeConfiguration);
 	if (appTree.compatibility.canInitialize)
-		appTree.initialize({ name: "Conference", sessions: [], days: [], sessionsPerDay: 4 });
+		appTree.initialize({
+			name: "Conference",
+			unscheduled: { sessions: [] },
+			days: [],
+			sessionsPerDay: 4,
+		});
 
 	// create the root element for React
 	const app = document.createElement("div");
@@ -67,7 +72,7 @@ export async function loadApp(
 						alert("AI failed to generate sessions. Please try again.");
 						return;
 					}
-					appTree.root.sessions.insertAtEnd(...sessions);
+					appTree.root.unscheduled.sessions.insertAtEnd(...sessions);
 				}} // eslint-disable-line @typescript-eslint/no-empty-function
 			/>
 		</DndProvider>,

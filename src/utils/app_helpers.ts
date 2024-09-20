@@ -33,11 +33,11 @@ export function moveItem(session: Session, destinationIndex: number, destination
 }
 
 export function findSession(conference: Conference, id: string): Session | undefined {
-	for (const s of conference.sessions) {
+	for (const s of conference.unscheduled.sessions) {
 		if (s.id === id) return s;
 	}
 	for (const day of conference.days) {
-		for (const s of day) {
+		for (const s of day.sessions) {
 			if (s.id === id) return s;
 		}
 	}

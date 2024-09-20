@@ -5,7 +5,6 @@
 
 import React from "react";
 import { Conference, Days } from "../schema/app_schema.js";
-import { findSession } from "../utils/app_helpers.js";
 import {
 	ThumbLikeFilled,
 	DismissFilled,
@@ -19,8 +18,6 @@ import {
 	MoreVerticalFilled,
 } from "@fluentui/react-icons";
 import { ClientSession } from "../schema/session_schema.js";
-import { getSelectedSessions } from "../utils/session_helpers.js";
-import { Tree } from "fluid-framework";
 
 export function NewDayButton(props: {
 	days: Days;
@@ -67,7 +64,7 @@ export function DeleteDayButton(props: {
 export function NewSessionButton(props: { conference: Conference; clientId: string }): JSX.Element {
 	const handleClick = (e: React.MouseEvent) => {
 		e.stopPropagation();
-		props.conference.sessions.addSession();
+		props.conference.unscheduled.sessions.addSession();
 	};
 
 	return (

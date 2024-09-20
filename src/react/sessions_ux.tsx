@@ -4,7 +4,7 @@
  */
 
 import React from "react";
-import { Conference, Days, Session, Sessions } from "../schema/app_schema.js";
+import { Conference, Day, Days, Session, Sessions, Unscheduled } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { ConnectableElement, useDrop } from "react-dnd";
 import { dragType } from "../utils/utils.js";
@@ -61,20 +61,23 @@ export function SessionsView(props: {
 	let formatting = "p-2 h-[calc(100vh-182px)] transition-all overflow-auto";
 	let borderFormatting = "relative transition-all border-4 border-dashed h-fit overflow-hidden";
 	const parent = Tree.parent(props.sessions);
-	if (Tree.is(parent, Conference)) {
+	if (Tree.is(parent, Unscheduled)) {
 		backgroundColor = "bg-blue-200";
 		formatting = `${formatting} w-[580px]`;
 		borderFormatting = `${borderFormatting} w-full`;
 		("relative transition-all border-4 border-dashed h-fit w-full overflow-hidden");
-	} else if (Tree.is(parent, Days)) {
+	} else if (Tree.is(parent, Day)) {
 		formatting = `${formatting} min-w-72`;
 		borderFormatting = `${borderFormatting} w-fit`;
 		const grandParent = Tree.parent(parent);
-		if (Tree.is(grandParent, Conference)) {
-			if (props.sessions.length > grandParent.sessionsPerDay) {
-				backgroundColor = "bg-red-400";
-			} else if (props.sessions.length == grandParent.sessionsPerDay) {
-				backgroundColor = "bg-green-200";
+		if (Tree.is(grandParent, Days)) {
+			const greatGrandParent = Tree.parent(grandParent);
+			if (Tree.is(greatGrandParent, Conference)) {
+				if (props.sessions.length > greatGrandParent.sessionsPerDay) {
+					backgroundColor = "bg-red-400";
+				} else if (props.sessions.length == greatGrandParent.sessionsPerDay) {
+					backgroundColor = "bg-green-200";
+				}
 			}
 		}
 	}
@@ -101,7 +104,7 @@ export function SessionsView(props: {
 function SessionsDecoration(props: { sessions: Sessions }): JSX.Element {
 	const parent = Tree.parent(props.sessions);
 	const formatting = "absolute bottom-6 right-6 bg-transparent font-extrabold text-7xl z-0";
-	if (Tree.is(parent, Conference)) {
+	if (Tree.is(parent, Unscheduled)) {
 		return <div className={`text-blue-300 ${formatting}`}>Unscheduled</div>;
 	} else {
 		return <div className={`text-gray-300 ${formatting}`}>Day</div>;
@@ -143,7 +146,7 @@ function SessionsViewContent(props: {
 
 	const parent = Tree.parent(props.sessions);
 
-	if (Tree.is(parent, Conference)) {
+	if (Tree.is(parent, Unscheduled)) {
 		return (
 			<>
 				<div className="flex flex-row flex-wrap w-full gap-4 p-4 content-start">

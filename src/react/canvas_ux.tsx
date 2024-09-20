@@ -43,6 +43,7 @@ export function Canvas(props: {
 	setSaved: (arg: boolean) => void;
 	setFluidMembers: (arg: IMember[]) => void;
 	setShowPrompt: (arg: boolean) => void;
+	showBorder?: boolean;
 }): JSX.Element {
 	const [invalidations, setInvalidations] = useState(0);
 
@@ -102,8 +103,10 @@ export function Canvas(props: {
 
 	const clientId = props.currentUser?.id ?? "";
 
+	const borderStyle = "";
+
 	return (
-		<div className="relative flex grow-0 h-full w-full bg-transparent">
+		<div className={`relative flex grow-0 h-full w-full bg-transparent ${borderStyle}`}>
 			<ConferenceView
 				conference={props.conferenceTree.root}
 				clientId={clientId}
@@ -152,7 +155,7 @@ export function ConferenceView(props: {
 	fluidMembers: IMember[];
 }): JSX.Element {
 	const sessionArray = [];
-	for (const i of props.conference.sessions) {
+	for (const i of props.conference.unscheduled.sessions) {
 		sessionArray.push(
 			<RootSessionWrapper
 				key={i.id}
@@ -168,7 +171,11 @@ export function ConferenceView(props: {
 		<div className="h-full w-full overflow-auto">
 			<div className="flex flex-row h-full w-full content-start">
 				<div className="flex h-full w-fit p-4">
-					<SessionsView sessions={props.conference.sessions} title="" {...props} />
+					<SessionsView
+						sessions={props.conference.unscheduled.sessions}
+						title=""
+						{...props}
+					/>
 				</div>
 				<div className="flex flex-row h-full w-full flex-nowrap gap-4 p-4 content-start">
 					<DaysView {...props} />
@@ -190,7 +197,7 @@ export function DaysView(props: {
 		dayArray.push(
 			<SessionsView
 				key={Tree.key(day)}
-				sessions={day}
+				sessions={day.sessions}
 				clientSession={props.clientSession}
 				clientId={props.clientId}
 				fluidMembers={props.fluidMembers}

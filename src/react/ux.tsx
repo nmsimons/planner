@@ -11,8 +11,8 @@ import "../output.css";
 import { IFluidContainer, IMember, IServiceAudience, TreeView } from "fluid-framework";
 import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
-import Prompt from "./prompt_ux.js";
-import { UserAvatars } from "./avatars_ux.js";
+import { Prompt } from "./prompt_ux.js";
+import { Header } from "./header_ux.js";
 
 export function ReactApp(props: {
 	conferenceTree: TreeView<typeof Conference>;
@@ -57,6 +57,7 @@ export function ReactApp(props: {
 					connectionState={connectionState}
 					fluidMembers={fluidMembers}
 					currentUser={currentUser}
+					insertTemplate={props.insertTemplate}
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
@@ -81,25 +82,5 @@ export function ReactApp(props: {
 				setIsOpen={setIsPromptOpen}
 			/>
 		</>
-	);
-}
-
-export function Header(props: {
-	saved: boolean;
-	connectionState: string;
-	fluidMembers: IMember[];
-	currentUser: IMember | undefined;
-}): JSX.Element {
-	return (
-		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full">
-			<div className="flex m-2">
-				Planner | {props.saved ? "saved" : "not saved"} | {props.connectionState}
-			</div>
-			<UserAvatars
-				currentUser={props.currentUser}
-				fluidMembers={props.fluidMembers}
-				layoutType="stack"
-			/>
-		</div>
 	);
 }
