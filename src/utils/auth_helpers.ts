@@ -1,5 +1,6 @@
 import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 import axios, { AxiosRequestConfig } from "axios";
+import { jwtDecode } from "jwt-decode";
 
 export async function login(msalInstance: PublicClientApplication): Promise<void> {
 	await msalInstance
@@ -68,8 +69,21 @@ export async function getSessionToken(
 	msalInstance: PublicClientApplication,
 	noRetry?: boolean,
 ): Promise<string> {
-	const account = await getAccount(msalInstance);
+	// Check if the session token is in the session storage
+	// If it is, check if it is expired
+	// If it is not expired, return the session token
+	const sessionToken = sessionStorage.getItem("sessionToken");
+	if (sessionToken) {
+		const decodedToken = jwtDecode(sessionToken);
+		if (decodedToken.exp) {
+			const expiryDate = new Date(decodedToken.exp * 1000);
+			if (expiryDate > new Date()) {
+				return sessionToken;
+			}
+		}
+	}
 
+	const account = await getAccount(msalInstance);
 	const response = await axios
 		.post(process.env.TOKEN_PROVIDER_URL + "/.auth/login/aad", {
 			access_token: account.idToken,
@@ -89,7 +103,6 @@ export async function getSessionToken(
 	}
 
 	sessionStorage.setItem("sessionToken", response.data.authenticationToken);
-
 	return response.data.authenticationToken;
 }
 
@@ -121,11 +134,16 @@ export async function getMsalInstance(): Promise<PublicClientApplication> {
 // Call axios to get a token from the token provider
 export async function getAccessToken(
 	url: string,
-	noRetry?: boolean,
+	sessionToken: string,
 	config?: AxiosRequestConfig,
 ): Promise<string> {
-	const response = await axios.get(url, config);
+	if (config === undefined) config = {};
+	config.headers = {
+		"Content-Type": "application/json",
+		"X-ZUMO-AUTH": sessionToken,
+	};
 
+	const response = await axios.get(url, config);
 	if (response.status !== 200) {
 		throw new Error("Failed to get access token");
 	}
