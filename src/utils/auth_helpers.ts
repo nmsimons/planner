@@ -2,16 +2,18 @@ import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azu
 import axios, { AxiosRequestConfig } from "axios";
 
 export async function login(msalInstance: PublicClientApplication): Promise<void> {
-	msalInstance
+	await msalInstance
 		.handleRedirectPromise()
 		.then((tokenResponse: AuthenticationResult | null) => {
 			// If the tokenResponse is not null, then the user is signed in
 			// and the tokenResponse is the result of the redirect.
 			if (tokenResponse !== null) {
+				console.log("User is signed in (TokenResponse): ", tokenResponse.account.username);
 				msalInstance.setActiveAccount(tokenResponse.account);
 			} else {
 				const currentAccounts = msalInstance.getAllAccounts();
 				if (currentAccounts.length === 0) {
+					console.log("No accounts found. Trying to login. (loginRedirect)");
 					// no accounts signed-in, attempt to sign a user in
 					msalInstance.loginRedirect({
 						scopes: [
@@ -22,6 +24,7 @@ export async function login(msalInstance: PublicClientApplication): Promise<void
 						],
 					});
 				} else if (currentAccounts.length > 1 || currentAccounts.length === 1) {
+					console.log("User is already signed in: ", currentAccounts[0].username);
 					msalInstance.setActiveAccount(currentAccounts[0]);
 				}
 			}
