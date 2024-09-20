@@ -23,8 +23,6 @@ import {
 	UndoButton,
 	RedoButton,
 	DeleteDayButton,
-	ShowPromptButton,
-	Divider,
 	DeleteSessionsButton,
 } from "./button_ux.js";
 import { undoRedo } from "../utils/undo.js";
