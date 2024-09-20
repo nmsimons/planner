@@ -78,7 +78,7 @@ export async function getSessionToken(
 			if (error.response && error.response.status === 401 && !noRetry) {
 				// refresh token and retry
 				await refresh(msalInstance);
-				return getSessionToken(msalInstance, true);
+				return await getSessionToken(msalInstance, true);
 			} else {
 				throw new Error("Failed to get session token");
 			}
