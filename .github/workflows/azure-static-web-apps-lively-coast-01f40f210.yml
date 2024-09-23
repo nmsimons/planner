@@ -21,14 +21,14 @@ jobs:
           lfs: false
       - name: Authenticate to Azure Artifacts Feed
         run: |
-          echo "registry=https://${{ secrets.NPM_REGISTRY_BASE }}" > ./.npmrc
+          echo "registry=https://${{ secrets.NPM_REGISTRY_BASE }}registry/" > ./.npmrc
           echo "always-auth=true" >> ./.npmrc
           encodedToken=$(echo -n $AZURE_ARTIFACTS_TOKEN | base64)
           echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:username=placeholder" >> $HOME/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:password=$encodedToken" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:_password=$encodedToken" >> $HOME/.npmrc
           echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:email=placeholder" >> $HOME/.npmrc
           echo "//${{ secrets.NPM_REGISTRY_BASE }}:username=placeholder" >> $HOME/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}:password=$encodedToken" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}:_password=$encodedToken" >> $HOME/.npmrc
           echo "//${{ secrets.NPM_REGISTRY_BASE }}:email=placeholder" >> $HOME/.npmrc
         env:
           AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
