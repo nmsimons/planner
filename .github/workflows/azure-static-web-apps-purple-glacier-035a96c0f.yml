@@ -19,6 +19,9 @@ jobs:
         with:
           submodules: true
           lfs: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
       - name: Authenticate to Azure Artifacts Feed
         run: |
           echo "registry=https://${NPM_REGISTRY_BASE}registry/" > ./.npmrc
