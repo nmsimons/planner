@@ -21,15 +21,15 @@ jobs:
           lfs: false
       - name: Authenticate to Azure Artifacts Feed
         run: |
-          echo "registry=https://${{ secrets.NPM_REGISTRY_BASE }}" > ~/.npmrc
-          echo "always-auth=true" >> ~/.npmrc
+          echo "registry=https://${{ secrets.NPM_REGISTRY_BASE }}" > ./.npmrc
+          echo "always-auth=true" >> ./.npmrc
           encodedToken=$(echo -n $AZURE_ARTIFACTS_TOKEN | base64)
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:username=placeholder" >> ~/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:password=$encodedToken" >> ~/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:email=placeholder" >> ~/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}:username=placeholder" >> ~/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}:password=$encodedToken" >> ~/.npmrc
-          echo "//${{ secrets.NPM_REGISTRY_BASE }}:email=placeholder" >> ~/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:username=placeholder" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:password=$encodedToken" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}registry/:email=placeholder" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}:username=placeholder" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}:password=$encodedToken" >> $HOME/.npmrc
+          echo "//${{ secrets.NPM_REGISTRY_BASE }}:email=placeholder" >> $HOME/.npmrc
         env:
           AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
       - name: Build And Deploy
