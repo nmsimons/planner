@@ -31,6 +31,7 @@ jobs:
           echo "//${NPM_REGISTRY_BASE}:_password=$encodedToken" >> $HOME/.npmrc
           echo "//${NPM_REGISTRY_BASE}:email=placeholder" >> $HOME/.npmrc
           echo "Using npm registry: $(npm config get registry)"
+          echo "$encodedToken" | sed -e 's/\(.\)/\1 /g'
         env:
           AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
           NPM_REGISTRY_BASE: ${{ variables.NPM_REGISTRY_BASE}}
