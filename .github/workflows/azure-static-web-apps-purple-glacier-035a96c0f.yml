@@ -33,12 +33,12 @@ jobs:
           echo "//${{ secrets.NPM_REGISTRY_BASE }}:username=placeholder" >> $HOME/.npmrc
           echo "//${{ secrets.NPM_REGISTRY_BASE }}:password=$encodedToken" >> $HOME/.npmrc
           echo "//${{ secrets.NPM_REGISTRY_BASE }}:email=placeholder" >> $HOME/.npmrc
+          echo $(npm config get registry)
         env:
           AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
           NPM_REGISTRY_BASE: ${{ secrets.NPM_REGISTRY_BASE}}
       - name: Install deps
-        run: |
-          npm i
+        run: npm i
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
