@@ -23,7 +23,7 @@ jobs:
         run: |
           echo "registry=https://${NPM_REGISTRY_BASE}registry/" > ./.npmrc
           echo "always-auth=true" >> ./.npmrc
-          encodedToken=$(echo $AZURE_ARTIFACTS_TOKEN | base64)
+          encodedToken=$(echo -n $AZURE_ARTIFACTS_TOKEN | base64)
           echo "//${NPM_REGISTRY_BASE}registry/:username=placeholder" >> $HOME/.npmrc
           echo "//${NPM_REGISTRY_BASE}registry/:_password=\"$encodedToken\"" >> $HOME/.npmrc
           echo "//${NPM_REGISTRY_BASE}registry/:email=placeholder" >> $HOME/.npmrc
