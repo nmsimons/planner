@@ -24,12 +24,12 @@ jobs:
           echo "registry=https://${NPM_REGISTRY_BASE}registry/" > ./.npmrc
           echo "always-auth=true" >> ./.npmrc
           encodedToken=$(echo -n $AZURE_ARTIFACTS_TOKEN | base64)
-          echo "//${NPM_REGISTRY_BASE}registry/:username=placeholder" >> $HOME/.npmrc
-          echo "//${NPM_REGISTRY_BASE}registry/:_password=\"$encodedToken\"" >> $HOME/.npmrc
-          echo "//${NPM_REGISTRY_BASE}registry/:email=placeholder" >> $HOME/.npmrc
-          echo "//${NPM_REGISTRY_BASE}:username=placeholder" >> $HOME/.npmrc
-          echo "//${NPM_REGISTRY_BASE}:_password=\"$encodedToken\"" >> $HOME/.npmrc
-          echo "//${NPM_REGISTRY_BASE}:email=placeholder" >> $HOME/.npmrc
+          echo "//${NPM_REGISTRY_BASE}registry/:username=placeholder" >> ./.npmrc
+          echo "//${NPM_REGISTRY_BASE}registry/:_password=\"$encodedToken\"" >> ./.npmrc
+          echo "//${NPM_REGISTRY_BASE}registry/:email=placeholder" >> ./.npmrc
+          echo "//${NPM_REGISTRY_BASE}:username=placeholder" >> ./.npmrc
+          echo "//${NPM_REGISTRY_BASE}:_password=\"$encodedToken\"" >> ./.npmrc
+          echo "//${NPM_REGISTRY_BASE}:email=placeholder" >> ./.npmrc
           echo "Using npm registry: $(npm config get registry)"
         env:
           AZURE_ARTIFACTS_TOKEN: ${{ secrets.AZURE_ARTIFACTS_TOKEN }}
