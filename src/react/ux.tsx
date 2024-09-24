@@ -50,6 +50,11 @@ export function ReactApp(props: {
 		});
 	}, []);
 
+	// Disable the right-click context menu
+	window.addEventListener("contextmenu", (e) => {
+		e.preventDefault();
+	});
+
 	return (
 		<>
 			<div
