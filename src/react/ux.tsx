@@ -31,6 +31,7 @@ export function ReactApp(props: {
 	const [connectionState, setConnectionState] = useState("");
 	const [saved, setSaved] = useState(false);
 	const [fluidMembers, setFluidMembers] = useState<IMember[]>([]);
+	const [currentView, setCurrentView] = useState(props.conferenceTree);
 
 	/** Unsubscribe to undo-redo events when the component unmounts */
 	useEffect(() => {
@@ -67,12 +68,13 @@ export function ReactApp(props: {
 					fluidMembers={fluidMembers}
 					currentUser={currentUser}
 					applyAgentEdits={props.applyAgentEdits}
-					treeView={props.conferenceTree}
+					treeView={currentView}
 					abortController={props.abortController}
+					setCurrentView={setCurrentView}
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
-						conferenceTree={props.conferenceTree}
+						conferenceTree={currentView}
 						sessionTree={props.sessionTree}
 						audience={props.audience}
 						container={props.container}
