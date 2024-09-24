@@ -1,14 +1,14 @@
 import { OdspClient } from "@fluidframework/odsp-client/beta";
 import { AzureClient } from "@fluidframework/azure-client";
-import { IFluidContainer } from "fluid-framework";
+import { IFluidContainer, TreeView } from "fluid-framework";
 import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { createRoot } from "react-dom/client";
 import { ReactApp } from "./react/ux.js";
-import { appTreeConfiguration } from "./schema/app_schema.js";
+import { appTreeConfiguration, Conference } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
-import { createSessionPrompter } from "./utils/gpt_helpers.js";
+import { createSessionPrompter, PrompterResult } from "./utils/gpt_helpers.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
 import { loadFluidData } from "./infra/fluid.js";
 import { containerSchema } from "./schema/container_schema.js";
@@ -58,21 +58,14 @@ export async function loadApp(
 				audience={services.audience}
 				container={container}
 				undoRedo={undoRedo}
-				insertTemplate={async (prompt: string) => {
+				applyAgentEdits={async (
+					prompt: string,
+					treeView: typeof appTree,
+				): Promise<PrompterResult> => {
 					if (prompter === undefined) {
-						try {
-							prompter = createSessionPrompter(msalInstance);
-						} catch (e) {
-							console.error("Failed to create AI prompter. Please try again.", e);
-							return;
-						}
+						prompter = createSessionPrompter(msalInstance);
 					}
-					const sessions = await prompter(prompt);
-					if (sessions === undefined) {
-						alert("AI failed to generate sessions. Please try again.");
-						return;
-					}
-					appTree.root.unscheduled.sessions.insertAtEnd(...sessions);
+					return await prompter(prompt, treeView);
 				}} // eslint-disable-line @typescript-eslint/no-empty-function
 			/>
 		</DndProvider>,

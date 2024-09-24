@@ -1,14 +1,20 @@
-import def from "ajv/dist/vocabularies/applicator/additionalItems.js";
 import React, { useState } from "react";
+import { Conference } from "../schema/app_schema.js";
+import { TreeView } from "fluid-framework";
+import { PrompterResult } from "../utils/gpt_helpers.js";
 
 export function HeaderPrompt(props: {
-	insertTemplate: (prompt: string) => Promise<void>;
+	applyAgentEdits: (
+		prompt: string,
+		treeView: TreeView<typeof Conference>,
+	) => Promise<PrompterResult>;
+	treeView: TreeView<typeof Conference>;
 }): JSX.Element {
 	const placeholderType = "Type here to talk to a robot...";
 	const placeholderTalk = "Talking to a robot...";
 	const buttonDefaultColor = "bg-gray-500";
 	const [promptText, setPromptText] = useState("");
-	const [templatePrompt, setTemplatePrompt] = useState("");
+	const [prompt, setTemplatePrompt] = useState("");
 	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
 	const [buttonPrompt, setButtonPrompt] = useState("Talk");
 	const [placeholder, setPlaceholder] = useState(placeholderType);
@@ -46,13 +52,13 @@ export function HeaderPrompt(props: {
 							setPlaceholder(placeholderTalk);
 							setPromptText("");
 							setButtonColor("bg-red-500");
-							console.log("Inserting template: " + templatePrompt);
-							props.insertTemplate(templatePrompt).then(() => {
+							console.log("Inserting template: " + prompt);
+							props.applyAgentEdits(prompt, props.treeView).then(() => {
 								setButtonColor(buttonDefaultColor);
 								setIsLoadingTemplate(false);
 								setButtonPrompt("Talk");
 								setPlaceholder(placeholderType);
-								setPromptText(templatePrompt);
+								setPromptText(prompt);
 							});
 						}
 					}}

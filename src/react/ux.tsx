@@ -12,6 +12,7 @@ import { IFluidContainer, IMember, IServiceAudience, TreeView } from "fluid-fram
 import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
 import { Header } from "./header_ux.js";
+import { PrompterResult } from "../utils/gpt_helpers.js";
 
 export function ReactApp(props: {
 	conferenceTree: TreeView<typeof Conference>;
@@ -19,7 +20,10 @@ export function ReactApp(props: {
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
 	undoRedo: undoRedo;
-	insertTemplate: (prompt: string) => Promise<void>;
+	applyAgentEdits: (
+		prompt: string,
+		treeView: TreeView<typeof Conference>,
+	) => Promise<PrompterResult>;
 }): JSX.Element {
 	const [currentUser, setCurrentUser] = useState<IMember | undefined>(undefined);
 	const [connectionState, setConnectionState] = useState("");
@@ -55,7 +59,8 @@ export function ReactApp(props: {
 					connectionState={connectionState}
 					fluidMembers={fluidMembers}
 					currentUser={currentUser}
-					insertTemplate={props.insertTemplate}
+					applyAgentEdits={props.applyAgentEdits}
+					treeView={props.conferenceTree}
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
