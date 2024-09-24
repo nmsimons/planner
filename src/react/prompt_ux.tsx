@@ -41,8 +41,8 @@ export function HeaderPrompt(props: {
 						case "tooManyErrors":
 							console.error("Too many errors");
 							break;
-						case "tooManyEdits":
-							console.error("Too many edits");
+						case "tooManyModelCalls":
+							console.error("Too many model calls");
 							break;
 						case "aborted":
 							console.error("Aborted");

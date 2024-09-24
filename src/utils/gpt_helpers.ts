@@ -23,7 +23,7 @@ export async function azureOpenAITokenProvider(
 	return token;
 }
 
-export type PrompterResult = "success" | "tooManyErrors" | "tooManyEdits" | "aborted";
+export type PrompterResult = "success" | "tooManyErrors" | "tooManyModelCalls" | "aborted";
 
 export function createSessionPrompter(
 	msalInstance: PublicClientApplication,
@@ -55,7 +55,8 @@ export function createSessionPrompter(
 			treeView,
 			prompt,
 			abortController,
-			maxEdits: 20,
+			maxModelCalls: 20,
+			finalReviewStep: true,
 			validator: (newContent: TreeNode) => {
 				// validate the new content
 				if (newContent instanceof Session) {
