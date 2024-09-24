@@ -14,28 +14,21 @@ export function HeaderPrompt(props: {
 }): JSX.Element {
 	const placeholderType = "Type here to talk to a robot...";
 	const placeholderTalk = "Talking to a robot...";
-	const buttonDefaultColor = "bg-gray-500";
-	const [promptText, setPromptText] = useState("");
-	const [prompt, setTemplatePrompt] = useState("");
-	const [isLoadingTemplate, setIsLoadingTemplate] = useState(false);
-	const [buttonPrompt, setButtonPrompt] = useState("Talk");
-	const [placeholder, setPlaceholder] = useState(placeholderType);
-	const [buttonColor, setButtonColor] = useState(buttonDefaultColor);
+	const buttonTalkColor = "bg-gray-500";
+	const buttonCancelColor = "bg-red-500";
 
-	const handleInsertTemplate = () => {
-		if (isLoadingTemplate) {
+	const [isPrompting, setIsPrompting] = useState(false);
+	const [promptText, setPromptText] = useState("");
+
+	const onClick = () => {
+		if (isPrompting) {
 			props.abortController.abort("User cancelled");
-			setIsLoadingTemplate(false);
-			setButtonPrompt("Talk");
-			setPlaceholder(placeholderType);
+			setIsPrompting(false);
 			setPromptText("");
-			setButtonColor(buttonDefaultColor);
 		} else {
-			setIsLoadingTemplate(true);
-			setButtonPrompt("Cancel");
-			setPlaceholder(placeholderTalk);
+			const prompt = promptText;
+			setIsPrompting(true);
 			setPromptText("");
-			setButtonColor("bg-red-500");
 			console.log("Inserting template: " + prompt);
 			props
 				.applyAgentEdits(prompt, props.treeView, props.abortController)
@@ -45,20 +38,16 @@ export function HeaderPrompt(props: {
 							console.log("Template inserted successfully");
 							break;
 						case "tooManyErrors":
-							console.log("Too many errors");
+							console.error("Too many errors");
 							break;
 						case "tooManyEdits":
-							console.log("Too many edits");
+							console.error("Too many edits");
 							break;
 						case "aborted":
-							console.log("Aborted");
+							console.error("Aborted");
 							break;
 					}
-					setButtonColor(buttonDefaultColor);
-					setIsLoadingTemplate(false);
-					setButtonPrompt("Talk");
-					setPlaceholder(placeholderType);
-					setPromptText(prompt);
+					setIsPrompting(false);
 				});
 		}
 	};
@@ -67,7 +56,7 @@ export function HeaderPrompt(props: {
 	// when the input field is focused
 	document.onkeydown = (e) => {
 		if (e.key === "Enter" && document.activeElement?.id === "insertTemplateInput") {
-			handleInsertTemplate();
+			onClick();
 		}
 	};
 
@@ -75,8 +64,8 @@ export function HeaderPrompt(props: {
 		<div className="h-full w-full flex flex-row items-center gap-2">
 			<div className="flex h-fit w-full">
 				<textarea
-					disabled={isLoadingTemplate}
-					placeholder={placeholder}
+					disabled={isPrompting}
+					placeholder={isPrompting ? placeholderTalk : placeholderType}
 					rows={1}
 					style={{ resize: "none" }}
 					className="w-full bg-white text-black py-1 px-2 rounded-sm"
@@ -85,19 +74,21 @@ export function HeaderPrompt(props: {
 					aria-label="Describe the template to be inserted"
 					onChange={(e) => {
 						setPromptText(e.target.value);
-						setTemplatePrompt(e.target.value);
 					}}
 				/>
 			</div>
 			<div className="flex h-fit w-fit">
 				<button
-					className={`${buttonColor} hover:bg-gray-800 text-white font-bold w-20 h-full py-1 px-2 rounded`}
+					className={`${
+						isPrompting ? buttonCancelColor : buttonTalkColor
+					} hover:bg-gray-800 text-white font-bold w-20 h-full py-1 px-2 rounded`}
 					id="insertTemplateButton"
 					onClick={() => {
-						handleInsertTemplate();
+						onClick();
 					}}
+					disabled={!promptText.length && !isPrompting}
 				>
-					{buttonPrompt}
+					{isPrompting ? "Cancel" : "Talk"}
 				</button>
 			</div>
 		</div>
