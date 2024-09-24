@@ -33,7 +33,9 @@ export class Session extends sf.object(
 	{
 		metadata: {
 			description:
-				"A session object that represents a session, workshop, panel, or keynote. 'sessionType' must be one of four possible types: 'session', 'workshop', 'panel', or 'keynote'.",
+				"A session object that represents a session, workshop, panel, or keynote." +
+				"'sessionType' must be one of four possible types: 'session', 'workshop', 'panel', or 'keynote'." +
+				"The session should be related to the conference name.",
 		},
 	},
 ) {
@@ -148,12 +150,22 @@ export class Days extends sf.array("Days", Day) {
 	}
 }
 
-export class Conference extends sf.object("Conference", {
-	name: sf.string,
-	unscheduled: Unscheduled,
-	days: Days,
-	sessionsPerDay: sf.number,
-}) {
+export class Conference extends sf.object(
+	"Conference",
+	{
+		name: sf.string,
+		unscheduled: Unscheduled,
+		days: Days,
+		sessionsPerDay: sf.number,
+	},
+	{
+		metadata: {
+			description:
+				"A conference object that contains all the sessions. Sessions should be based on the Conference name." +
+				"Each day should have a maximum of 'sessionsPerDay' sessions.",
+		},
+	},
+) {
 	// Clear all the sessions from the conference
 	public clear() {
 		Tree.runTransaction<Conference>(this, () => {

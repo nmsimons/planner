@@ -162,7 +162,7 @@ export function ConferenceView(props: {
 				<div className="flex h-full w-fit p-4">
 					<SessionsView
 						sessions={props.conference.unscheduled.sessions}
-						title=""
+						title={props.conference.name}
 						{...props}
 					/>
 				</div>
