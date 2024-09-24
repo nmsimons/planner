@@ -1,8 +1,8 @@
-import { Conference } from "../schema/app_schema.js";
+import { Conference, Session } from "../schema/app_schema.js";
 import { AzureOpenAI } from "openai";
 import { PublicClientApplication } from "@azure/msal-browser";
 
-import { TreeView } from "fluid-framework";
+import { TreeNode, TreeView } from "fluid-framework";
 
 import { getAccessToken, getSessionToken } from "./auth_helpers.js";
 
@@ -46,6 +46,22 @@ export function createSessionPrompter(
 
 	return async (prompt, treeView) => {
 		console.log("Prompting Azure OpenAI with:", prompt);
-		return generateTreeEdits({ openAIClient: openai, treeView, prompt, maxEdits: 20 });
+		return generateTreeEdits({
+			openAIClient: openai,
+			treeView,
+			prompt,
+			maxEdits: 20,
+			validator: (newContent: TreeNode) => {
+				// validate the new content
+				if (newContent instanceof Session) {
+					const sessionTypes = ["session", "workshop", "keynote", "panel"];
+					if (!sessionTypes.includes(newContent.sessionType)) {
+						throw new Error(
+							"sessionType must be one of: session, workshop, keynote, panel",
+						);
+					}
+				}
+			},
+		});
 	};
 }
