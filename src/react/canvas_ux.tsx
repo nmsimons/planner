@@ -67,7 +67,7 @@ export function Canvas(props: {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
-	}, [props.conferenceTreeinvalidations, conferenceTree.root]);
+	}, [invalidations, conferenceTree.root]);
 
 	useEffect(() => {
 		const updateConnectionState = () => {
