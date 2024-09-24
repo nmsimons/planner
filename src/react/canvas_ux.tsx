@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Conference } from "../schema/app_schema.js";
 import { ClientSession } from "../schema/session_schema.js";
 import {
@@ -42,6 +42,20 @@ export function Canvas(props: {
 	setFluidMembers: (arg: IMember[]) => void;
 	showBorder?: boolean;
 }): JSX.Element {
+	const {
+		audience,
+		conferenceTree,
+		container,
+		currentUser,
+		fluidMembers,
+		sessionTree,
+		setConnectionState,
+		setCurrentUser,
+		setFluidMembers,
+		setSaved,
+		undoRedo,
+	} = props;
+
 	const [invalidations, setInvalidations] = useState(0);
 
 	// Register for tree deltas when the component mounts.
@@ -49,88 +63,85 @@ export function Canvas(props: {
 	// For more complex apps, this code can be included
 	// on lower level components.
 	useEffect(() => {
-		const unsubscribe = Tree.on(props.conferenceTree.root, "treeChanged", () => {
+		const unsubscribe = Tree.on(conferenceTree.root, "treeChanged", () => {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
-	}, []);
+	}, [invalidations, conferenceTree.root]);
 
 	useEffect(() => {
 		const updateConnectionState = () => {
-			if (props.container.connectionState === ConnectionState.Connected) {
-				props.setConnectionState("connected");
-			} else if (props.container.connectionState === ConnectionState.Disconnected) {
-				props.setConnectionState("disconnected");
-			} else if (props.container.connectionState === ConnectionState.EstablishingConnection) {
-				props.setConnectionState("connecting");
-			} else if (props.container.connectionState === ConnectionState.CatchingUp) {
-				props.setConnectionState("catching up");
+			if (container.connectionState === ConnectionState.Connected) {
+				setConnectionState("connected");
+			} else if (container.connectionState === ConnectionState.Disconnected) {
+				setConnectionState("disconnected");
+			} else if (container.connectionState === ConnectionState.EstablishingConnection) {
+				setConnectionState("connecting");
+			} else if (container.connectionState === ConnectionState.CatchingUp) {
+				setConnectionState("catching up");
 			}
 		};
 		updateConnectionState();
-		props.setSaved(!props.container.isDirty);
-		props.container.on("connected", updateConnectionState);
-		props.container.on("disconnected", updateConnectionState);
-		props.container.on("dirty", () => props.setSaved(false));
-		props.container.on("saved", () => props.setSaved(true));
-		props.container.on("disposed", updateConnectionState);
-	}, []);
+		setSaved(!container.isDirty);
+		container.on("connected", updateConnectionState);
+		container.on("disconnected", updateConnectionState);
+		container.on("dirty", () => setSaved(false));
+		container.on("saved", () => setSaved(true));
+		container.on("disposed", updateConnectionState);
+	}, [container, setConnectionState, setSaved]);
 
-	const updateMembers = () => {
-		if (props.audience.getMyself() == undefined) return;
-		if (props.audience.getMyself()?.id == undefined) return;
-		if (props.audience.getMembers() == undefined) return;
-		if (props.container.connectionState !== ConnectionState.Connected) return;
-		if (props.currentUser === undefined) {
-			const user = props.audience.getMyself();
+	const updateMembers = useCallback(() => {
+		if (audience.getMyself() == undefined) return;
+		if (audience.getMyself()?.id == undefined) return;
+		if (audience.getMembers() == undefined) return;
+		if (container.connectionState !== ConnectionState.Connected) return;
+		if (currentUser === undefined) {
+			const user = audience.getMyself();
 			if (user !== undefined) {
-				props.setCurrentUser(user);
+				setCurrentUser(user);
 			}
 		}
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		props.setFluidMembers(Array.from(props.audience.getMembers()).map(([_, member]) => member));
-	};
+		setFluidMembers(Array.from(audience.getMembers()).map(([_, member]) => member));
+	}, [audience, container, currentUser, setCurrentUser, setFluidMembers]);
 
 	useEffect(() => {
-		props.audience.on("membersChanged", updateMembers);
+		audience.on("membersChanged", updateMembers);
 		return () => {
-			props.audience.off("membersChanged", updateMembers);
+			audience.off("membersChanged", updateMembers);
 		};
-	}, []);
+	}, [audience, updateMembers]);
 
-	const clientId = props.currentUser?.id ?? "";
+	const clientId = currentUser?.id ?? "";
 
 	const borderStyle = "";
 
 	return (
 		<div className={`relative flex grow-0 h-full w-full bg-transparent ${borderStyle}`}>
 			<ConferenceView
-				conference={props.conferenceTree.root}
+				conference={conferenceTree.root}
 				clientId={clientId}
-				clientSession={props.sessionTree.root}
-				fluidMembers={props.fluidMembers}
+				clientSession={sessionTree.root}
+				fluidMembers={fluidMembers}
 			/>
 			<Floater>
 				<ButtonGroup>
-					<NewSessionButton conference={props.conferenceTree.root} clientId={clientId} />
+					<NewSessionButton conference={conferenceTree.root} clientId={clientId} />
 					<NewDayButton
-						days={props.conferenceTree.root.days}
-						session={props.sessionTree.root}
+						days={conferenceTree.root.days}
+						session={sessionTree.root}
 						clientId={clientId}
 					/>
 					<DeleteDayButton
-						days={props.conferenceTree.root.days}
-						session={props.sessionTree.root}
+						days={conferenceTree.root.days}
+						session={sessionTree.root}
 						clientId={clientId}
 					/>
 				</ButtonGroup>
 				<ButtonGroup>
-					<DeleteSessionsButton
-						conference={props.conferenceTree.root}
-						clientId={clientId}
-					/>
-					<UndoButton undo={() => props.undoRedo.undo()} />
-					<RedoButton redo={() => props.undoRedo.redo()} />
+					<DeleteSessionsButton conference={conferenceTree.root} clientId={clientId} />
+					<UndoButton undo={() => undoRedo.undo()} />
+					<RedoButton redo={() => undoRedo.redo()} />
 				</ButtonGroup>
 			</Floater>
 		</div>
