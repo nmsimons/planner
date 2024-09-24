@@ -53,13 +53,29 @@ export function HeaderPrompt(props: {
 							setPromptText("");
 							setButtonColor("bg-red-500");
 							console.log("Inserting template: " + prompt);
-							props.applyAgentEdits(prompt, props.treeView).then(() => {
-								setButtonColor(buttonDefaultColor);
-								setIsLoadingTemplate(false);
-								setButtonPrompt("Talk");
-								setPlaceholder(placeholderType);
-								setPromptText(prompt);
-							});
+							props
+								.applyAgentEdits(prompt, props.treeView)
+								.then((result: PrompterResult) => {
+									switch (result) {
+										case "success":
+											console.log("Template inserted successfully");
+											break;
+										case "tooManyErrors":
+											console.log("Too many errors");
+											break;
+										case "tooManyEdits":
+											console.log("Too many edits");
+											break;
+										case "aborted":
+											console.log("Aborted");
+											break;
+									}
+									setButtonColor(buttonDefaultColor);
+									setIsLoadingTemplate(false);
+									setButtonPrompt("Talk");
+									setPlaceholder(placeholderType);
+									setPromptText(prompt);
+								});
 						}
 					}}
 				>

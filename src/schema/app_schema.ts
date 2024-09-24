@@ -15,19 +15,28 @@ const sf = new SchemaFactory("Planner");
 // Define the schema for the session object.
 // Helper functions for working with the data contained in this object
 // are included in this class definition as methods.
-export class Session extends sf.object("Session", {
-	id: sf.identifier,
-	title: sf.string,
-	abstract: sf.string,
-	sessionType: sf.required(sf.string, {
+export class Session extends sf.object(
+	"Session",
+	{
+		id: sf.identifier,
+		title: sf.string,
+		abstract: sf.string,
+		sessionType: sf.required(sf.string, {
+			metadata: {
+				description:
+					"This is one of four possible strings: 'session', 'workshop', 'panel', or 'keynote'. NOTHING IS ELSE IS ALLOWED.",
+			},
+		}),
+		created: sf.required(sf.number, { metadata: { llmDefault: () => Date.now() } }),
+		lastChanged: sf.required(sf.number, { metadata: { llmDefault: () => Date.now() } }),
+	},
+	{
 		metadata: {
 			description:
-				"This is one of four possible strings: 'Session', 'Workshop', 'Panel', or 'Keynote'",
+				"A session object that represents a session, workshop, panel, or keynote.The sessionType must be one of four possible strings: 'session', 'workshop', 'panel', or 'keynote'.",
 		},
-	}),
-	created: sf.required(sf.number, { metadata: { llmDefault: () => Date.now() } }),
-	lastChanged: sf.required(sf.number, { metadata: { llmDefault: () => Date.now() } }),
-}) {
+	},
+) {
 	// Update the title text and also update the timestamp
 	public updateTitle(text: string) {
 		this.lastChanged = new Date().getTime();

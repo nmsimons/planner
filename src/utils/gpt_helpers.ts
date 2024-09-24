@@ -6,7 +6,7 @@ import { TreeView } from "fluid-framework";
 
 import { getAccessToken, getSessionToken } from "./auth_helpers.js";
 
-import { generateTreeEdits, initializeOpenAIClient } from "@fluidframework/tree/internal";
+import { generateTreeEdits } from "@fluidframework/tree/internal";
 
 export async function azureOpenAITokenProvider(
 	msalInstance: PublicClientApplication,
@@ -39,15 +39,13 @@ export function createSessionPrompter(
 		);
 	}
 
-	// const openai = new AzureOpenAI({
-	// 	azureADTokenProvider: () => azureOpenAITokenProvider(msalInstance),
-	// 	apiVersion: "2024-08-01-preview",
-	// });
-
-	const openaiClient = initializeOpenAIClient("azure");
+	const openai = new AzureOpenAI({
+		azureADTokenProvider: () => azureOpenAITokenProvider(msalInstance),
+		apiVersion: "2024-08-01-preview",
+	});
 
 	return async (prompt, treeView) => {
 		console.log("Prompting Azure OpenAI with:", prompt);
-		return generateTreeEdits({ openAIClient: openaiClient, treeView, prompt, maxEdits: 20 });
+		return generateTreeEdits({ openAIClient: openai, treeView, prompt, maxEdits: 20 });
 	};
 }
