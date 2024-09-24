@@ -53,7 +53,7 @@ export function Canvas(props: {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
-	}, []);
+	}, [props.conferenceTree]);
 
 	useEffect(() => {
 		const updateConnectionState = () => {
@@ -74,7 +74,7 @@ export function Canvas(props: {
 		props.container.on("dirty", () => props.setSaved(false));
 		props.container.on("saved", () => props.setSaved(true));
 		props.container.on("disposed", updateConnectionState);
-	}, []);
+	}, [props.container]);
 
 	const updateMembers = () => {
 		if (props.audience.getMyself() == undefined) return;
@@ -96,7 +96,7 @@ export function Canvas(props: {
 		return () => {
 			props.audience.off("membersChanged", updateMembers);
 		};
-	}, []);
+	}, [props.audience]);
 
 	const clientId = props.currentUser?.id ?? "";
 

@@ -130,32 +130,38 @@ export function SessionView(props: {
 		}
 	}, [props.session.title, props.session.abstract]);
 
-	const [{ isDragging }, drag] = useDrag(() => ({
-		type: dragType.SESSION,
-		item: props.session,
-		collect: (monitor) => ({
-			isDragging: monitor.isDragging(),
+	const [{ isDragging }, drag] = useDrag(
+		() => ({
+			type: dragType.SESSION,
+			item: props.session,
+			collect: (monitor) => ({
+				isDragging: monitor.isDragging(),
+			}),
 		}),
-	}));
+		[props.session],
+	);
 
-	const [{ isOver, canDrop }, drop] = useDrop(() => ({
-		accept: [dragType.SESSION],
-		collect: (monitor) => ({
-			isOver: !!monitor.isOver(),
-			canDrop: !!monitor.canDrop(),
+	const [{ isOver, canDrop }, drop] = useDrop(
+		() => ({
+			accept: [dragType.SESSION],
+			collect: (monitor) => ({
+				isOver: !!monitor.isOver(),
+				canDrop: !!monitor.canDrop(),
+			}),
+			canDrop: (item) => {
+				if (Tree.is(item, Session) && item !== props.session) return true;
+				return false;
+			},
+			drop: (item) => {
+				const droppedItem = item;
+				if (Tree.is(droppedItem, Session) && Tree.is(parent, Sessions)) {
+					moveItem(droppedItem, parent.indexOf(props.session), parent);
+				}
+				return;
+			},
 		}),
-		canDrop: (item) => {
-			if (Tree.is(item, Session) && item !== props.session) return true;
-			return false;
-		},
-		drop: (item) => {
-			const droppedItem = item;
-			if (Tree.is(droppedItem, Session) && Tree.is(parent, Sessions)) {
-				moveItem(droppedItem, parent.indexOf(props.session), parent);
-			}
-			return;
-		},
-	}));
+		[props.session],
+	);
 
 	const attachRef = (el: ConnectableElement) => {
 		drag(el);
