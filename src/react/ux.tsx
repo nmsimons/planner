@@ -36,7 +36,7 @@ export function ReactApp(props: {
 	/** Unsubscribe to undo-redo events when the component unmounts */
 	useEffect(() => {
 		return props.undoRedo.dispose;
-	}, []);
+	}, [props.undoRedo]);
 
 	/** Update the fluidMembers array whenever the audience changes */
 	useEffect(() => {
@@ -49,7 +49,7 @@ export function ReactApp(props: {
 			setFluidMembers(Array.from(props.audience.getMembers().values()));
 			setCurrentUser(props.audience.getMyself());
 		});
-	}, []);
+	}, [props.audience]);
 
 	// Disable the right-click context menu
 	window.addEventListener("contextmenu", (e) => {

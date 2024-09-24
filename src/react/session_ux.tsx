@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Conference, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
@@ -49,24 +49,16 @@ export function SessionView(props: {
 	const color = "bg-white";
 	const selectedColor = "bg-yellow-100";
 
-	const parent = Tree.parent(props.session);
-	if (!Tree.is(parent, Sessions)) return <></>;
-	const grandParent = Tree.parent(parent);
-	if (Tree.is(grandParent, Conference)) unscheduled = true;
-
 	const [{ status }, toggle] = useTransition({
 		timeout: 1000,
 	});
 
 	const [selected, setSelected] = useState(false);
-
 	const [remoteSelected, setRemoteSelected] = useState(false);
-
 	const [bgColor, setBgColor] = useState(color);
-
 	const [invalidations, setInvalidations] = useState(0);
 
-	const test = () => {
+	const test = useCallback(() => {
 		testRemoteNoteSelection(
 			props.session,
 			props.clientSession,
@@ -75,7 +67,7 @@ export function SessionView(props: {
 			setSelected,
 			props.fluidMembers,
 		);
-	};
+	}, [props.clientId, props.clientSession, props.fluidMembers, props.session]);
 
 	const update = (action: selectAction) => {
 		updateRemoteNoteSelection(props.session, action, props.clientSession, props.clientId);
@@ -91,15 +83,15 @@ export function SessionView(props: {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
-	}, []);
+	}, [invalidations, props.clientSession]);
 
 	useEffect(() => {
 		test();
-	}, [invalidations]);
+	}, [invalidations, test]);
 
 	useEffect(() => {
 		test();
-	}, [props.fluidMembers]);
+	}, [props.fluidMembers, test]);
 
 	useEffect(() => {
 		mounted.current = true;
@@ -108,7 +100,7 @@ export function SessionView(props: {
 		return () => {
 			mounted.current = false;
 		};
-	}, []);
+	}, [test]);
 
 	useEffect(() => {
 		if (selected) {
@@ -120,9 +112,10 @@ export function SessionView(props: {
 
 	toggle(false);
 
+	const parent = Tree.parent(props.session);
 	useEffect(() => {
 		toggle(true);
-	}, [Tree.parent(props.session)]);
+	}, [parent]);
 
 	useEffect(() => {
 		if (mounted.current) {
@@ -172,6 +165,10 @@ export function SessionView(props: {
 			update(selectAction.SINGLE);
 		}
 	};
+
+	if (!Tree.is(parent, Sessions)) return <></>;
+	const grandParent = Tree.parent(parent);
+	if (Tree.is(grandParent, Conference)) unscheduled = true;
 
 	let borderPostion = "";
 	let hoverMovement = "";
@@ -370,7 +367,7 @@ function TypeList(props: { session: Session }): JSX.Element {
 		props.session.updateSessionType(
 			selectedSessionType.value as "session" | "keynote" | "panel" | "workshop",
 		);
-	}, [selectedSessionType]);
+	}, [selectedSessionType, props.session]);
 
 	return (
 		<Listbox value={selectedSessionType} onChange={setSelectedSessionType}>
