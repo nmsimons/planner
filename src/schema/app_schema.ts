@@ -33,7 +33,7 @@ export class Session extends sf.object(
 	{
 		metadata: {
 			description:
-				"A session object that represents a session, workshop, panel, or keynote. The session must be one of four possible types: 'session', 'workshop', 'panel', or 'keynote'.",
+				"A session object that represents a session, workshop, panel, or keynote. 'sessionType' must be one of four possible types: 'session', 'workshop', 'panel', or 'keynote'.",
 		},
 	},
 ) {

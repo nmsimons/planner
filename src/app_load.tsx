@@ -44,6 +44,8 @@ export async function loadApp(
 	// Create undo/redo stacks for the app
 	const undoRedo = createUndoRedoStacks(appTree.events);
 
+	const abortController = new AbortController();
+
 	// Create an AI prompter for generating sessions
 	let prompter: ReturnType<typeof createSessionPrompter> | undefined;
 
@@ -65,8 +67,9 @@ export async function loadApp(
 					if (prompter === undefined) {
 						prompter = createSessionPrompter(msalInstance);
 					}
-					return await prompter(prompt, treeView);
+					return await prompter(prompt, treeView, abortController);
 				}} // eslint-disable-line @typescript-eslint/no-empty-function
+				abortController={abortController}
 			/>
 		</DndProvider>,
 	);

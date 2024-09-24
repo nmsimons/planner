@@ -23,7 +23,9 @@ export function ReactApp(props: {
 	applyAgentEdits: (
 		prompt: string,
 		treeView: TreeView<typeof Conference>,
+		abortController: AbortController,
 	) => Promise<PrompterResult>;
+	abortController: AbortController;
 }): JSX.Element {
 	const [currentUser, setCurrentUser] = useState<IMember | undefined>(undefined);
 	const [connectionState, setConnectionState] = useState("");
@@ -61,6 +63,7 @@ export function ReactApp(props: {
 					currentUser={currentUser}
 					applyAgentEdits={props.applyAgentEdits}
 					treeView={props.conferenceTree}
+					abortController={props.abortController}
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas

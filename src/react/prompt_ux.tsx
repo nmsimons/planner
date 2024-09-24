@@ -7,8 +7,10 @@ export function HeaderPrompt(props: {
 	applyAgentEdits: (
 		prompt: string,
 		treeView: TreeView<typeof Conference>,
+		abortController: AbortController,
 	) => Promise<PrompterResult>;
 	treeView: TreeView<typeof Conference>;
+	abortController: AbortController;
 }): JSX.Element {
 	const placeholderType = "Type here to talk to a robot...";
 	const placeholderTalk = "Talking to a robot...";
@@ -44,8 +46,12 @@ export function HeaderPrompt(props: {
 					id="insertTemplateButton"
 					onClick={() => {
 						if (isLoadingTemplate) {
-							// cancel the robot talk
-							return;
+							props.abortController.abort("User cancelled");
+							setIsLoadingTemplate(false);
+							setButtonPrompt("Talk");
+							setPlaceholder(placeholderType);
+							setPromptText("");
+							setButtonColor(buttonDefaultColor);
 						} else {
 							setIsLoadingTemplate(true);
 							setButtonPrompt("Cancel");
@@ -54,7 +60,7 @@ export function HeaderPrompt(props: {
 							setButtonColor("bg-red-500");
 							console.log("Inserting template: " + prompt);
 							props
-								.applyAgentEdits(prompt, props.treeView)
+								.applyAgentEdits(prompt, props.treeView, props.abortController)
 								.then((result: PrompterResult) => {
 									switch (result) {
 										case "success":

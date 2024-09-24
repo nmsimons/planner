@@ -27,7 +27,11 @@ export type PrompterResult = "success" | "tooManyErrors" | "tooManyEdits" | "abo
 
 export function createSessionPrompter(
 	msalInstance: PublicClientApplication,
-): (prompt: string, treeView: TreeView<typeof Conference>) => Promise<PrompterResult> {
+): (
+	prompt: string,
+	treeView: TreeView<typeof Conference>,
+	abortController: AbortController,
+) => Promise<PrompterResult> {
 	console.log("Creating Azure OpenAI prompter");
 
 	const endpoint =
@@ -44,12 +48,13 @@ export function createSessionPrompter(
 		apiVersion: "2024-08-01-preview",
 	});
 
-	return async (prompt, treeView) => {
+	return async (prompt, treeView, abortController) => {
 		console.log("Prompting Azure OpenAI with:", prompt);
 		return generateTreeEdits({
 			openAIClient: openai,
 			treeView,
 			prompt,
+			abortController,
 			maxEdits: 20,
 			validator: (newContent: TreeNode) => {
 				// validate the new content
