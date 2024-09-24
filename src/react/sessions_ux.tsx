@@ -19,35 +19,38 @@ export function SessionsView(props: {
 	fluidMembers: IMember[];
 	title: string;
 }): JSX.Element {
-	const [{ isOver, canDrop }, drop] = useDrop(() => ({
-		accept: [dragType.SESSION],
-		collect: (monitor) => ({
-			isOver: !!monitor.isOver({ shallow: true }),
-			canDrop: !!monitor.canDrop(),
+	const [{ isOver, canDrop }, drop] = useDrop(
+		() => ({
+			accept: [dragType.SESSION],
+			collect: (monitor) => ({
+				isOver: !!monitor.isOver({ shallow: true }),
+				canDrop: !!monitor.canDrop(),
+			}),
+			canDrop: (item) => {
+				if (Tree.is(item, Session)) return true;
+				return false;
+			},
+			drop: (item, monitor) => {
+				const didDrop = monitor.didDrop();
+				if (didDrop) {
+					return;
+				}
+
+				const isOver = monitor.isOver({ shallow: true });
+				if (!isOver) {
+					return;
+				}
+
+				const droppedItem = item;
+				if (Tree.is(droppedItem, Session)) {
+					moveItem(droppedItem, props.sessions.length, props.sessions);
+				}
+
+				return;
+			},
 		}),
-		canDrop: (item) => {
-			if (Tree.is(item, Session)) return true;
-			return false;
-		},
-		drop: (item, monitor) => {
-			const didDrop = monitor.didDrop();
-			if (didDrop) {
-				return;
-			}
-
-			const isOver = monitor.isOver({ shallow: true });
-			if (!isOver) {
-				return;
-			}
-
-			const droppedItem = item;
-			if (Tree.is(droppedItem, Session)) {
-				moveItem(droppedItem, props.sessions.length, props.sessions);
-			}
-
-			return;
-		},
-	}));
+		[props.sessions],
+	);
 
 	function attachRef(el: ConnectableElement) {
 		drop(el);

@@ -68,7 +68,7 @@ export function ReactApp(props: {
 					fluidMembers={fluidMembers}
 					currentUser={currentUser}
 					applyAgentEdits={props.applyAgentEdits}
-					treeView={currentView}
+					treeView={props.conferenceTree}
 					abortController={props.abortController}
 					setCurrentView={setCurrentView}
 				/>

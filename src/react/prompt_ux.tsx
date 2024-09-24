@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Conference } from "../schema/app_schema.js";
-import { TreeView } from "fluid-framework";
+import { TreeView, TreeViewConfiguration } from "fluid-framework";
 import { PrompterResult } from "../utils/gpt_helpers.js";
+import { getBranch } from "fluid-framework/alpha";
 
 export function HeaderPrompt(props: {
 	applyAgentEdits: (
@@ -23,6 +24,7 @@ export function HeaderPrompt(props: {
 
 	const onClick = () => {
 		if (isPrompting) {
+			props.setCurrentView(props.treeView);
 			props.abortController.abort("User cancelled");
 			setIsPrompting(false);
 			setPromptText("");
@@ -30,9 +32,15 @@ export function HeaderPrompt(props: {
 			const prompt = promptText;
 			setIsPrompting(true);
 			setPromptText("");
-			console.log("Inserting template: " + prompt);
+			const main = getBranch(props.treeView);
+			const branch = main.branch();
+			const branchView = branch.viewWith(
+				new TreeViewConfiguration({ schema: props.treeView.schema }),
+			);
+
+			props.setCurrentView(branchView);
 			props
-				.applyAgentEdits(prompt, props.treeView, props.abortController)
+				.applyAgentEdits(prompt, branchView, props.abortController)
 				.then((result: PrompterResult) => {
 					switch (result) {
 						case "success":
@@ -48,6 +56,10 @@ export function HeaderPrompt(props: {
 							console.error("Aborted");
 							break;
 					}
+
+					props.setCurrentView(props.treeView);
+
+					main.merge(branch);
 					setIsPrompting(false);
 				});
 		}
