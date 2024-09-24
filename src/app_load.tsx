@@ -1,12 +1,12 @@
 import { OdspClient } from "@fluidframework/odsp-client/beta";
 import { AzureClient } from "@fluidframework/azure-client";
-import { IFluidContainer, TreeView } from "fluid-framework";
+import { IFluidContainer } from "fluid-framework";
 import React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { createRoot } from "react-dom/client";
 import { ReactApp } from "./react/ux.js";
-import { appTreeConfiguration, Conference } from "./schema/app_schema.js";
+import { appTreeConfiguration } from "./schema/app_schema.js";
 import { sessionTreeConfiguration } from "./schema/session_schema.js";
 import { createSessionPrompter, PrompterResult } from "./utils/gpt_helpers.js";
 import { createUndoRedoStacks } from "./utils/undo.js";
