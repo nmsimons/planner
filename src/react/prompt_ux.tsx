@@ -11,6 +11,7 @@ export function HeaderPrompt(props: {
 	) => Promise<PrompterResult>;
 	treeView: TreeView<typeof Conference>;
 	abortController: AbortController;
+	setCurrentView: (arg: TreeView<typeof Conference>) => void;
 }): JSX.Element {
 	const placeholderType = "Type here to talk to a robot...";
 	const placeholderTalk = "Talking to a robot...";

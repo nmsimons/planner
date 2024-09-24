@@ -17,6 +17,7 @@ export function Header(props: {
 	) => Promise<PrompterResult>;
 	treeView: TreeView<typeof Conference>;
 	abortController: AbortController;
+	setCurrentView: (arg: TreeView<typeof Conference>) => void;
 }): JSX.Element {
 	return (
 		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full gap-4">
@@ -27,6 +28,7 @@ export function Header(props: {
 				applyAgentEdits={props.applyAgentEdits}
 				treeView={props.treeView}
 				abortController={props.abortController}
+				setCurrentView={props.setCurrentView}
 			/>
 			<UserAvatars
 				currentUser={props.currentUser}
