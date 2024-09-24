@@ -57,6 +57,7 @@ export function createSessionPrompter(
 			abortController,
 			maxModelCalls: 20,
 			finalReviewStep: true,
+			dumpDebugLog: true,
 			validator: (newContent: TreeNode) => {
 				// validate the new content
 				if (newContent instanceof Session) {
