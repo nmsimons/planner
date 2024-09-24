@@ -3,7 +3,7 @@
  * Licensed under the MIT License.
  */
 
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Conference, Session, Sessions } from "../schema/app_schema.js";
 import { moveItem } from "../utils/app_helpers.js";
 import { dragType, selectAction } from "../utils/utils.js";
@@ -43,42 +43,36 @@ export function SessionView(props: {
 	fluidMembers: IMember[];
 	setIsDetailsShowing: (arg: boolean) => void;
 }): JSX.Element {
+	const { clientId, clientSession, fluidMembers, session, setIsDetailsShowing } = props;
+
 	const mounted = useRef(false);
 	let unscheduled = false;
 
 	const color = "bg-white";
 	const selectedColor = "bg-yellow-100";
 
-	const parent = Tree.parent(props.session);
-	if (!Tree.is(parent, Sessions)) return <></>;
-	const grandParent = Tree.parent(parent);
-	if (Tree.is(grandParent, Conference)) unscheduled = true;
-
 	const [{ status }, toggle] = useTransition({
 		timeout: 1000,
 	});
 
 	const [selected, setSelected] = useState(false);
-
 	const [remoteSelected, setRemoteSelected] = useState(false);
-
 	const [bgColor, setBgColor] = useState(color);
-
 	const [invalidations, setInvalidations] = useState(0);
 
-	const test = () => {
+	const test = useCallback(() => {
 		testRemoteNoteSelection(
-			props.session,
-			props.clientSession,
-			props.clientId,
+			session,
+			clientSession,
+			clientId,
 			setRemoteSelected,
 			setSelected,
-			props.fluidMembers,
+			fluidMembers,
 		);
-	};
+	}, [clientId, clientSession, fluidMembers, session]);
 
 	const update = (action: selectAction) => {
-		updateRemoteNoteSelection(props.session, action, props.clientSession, props.clientId);
+		updateRemoteNoteSelection(session, action, clientSession, clientId);
 	};
 
 	// Register for tree deltas when the component mounts.
@@ -87,19 +81,19 @@ export function SessionView(props: {
 	// on lower level components.
 	useEffect(() => {
 		// Returns the cleanup function to be invoked when the component unmounts.
-		const unsubscribe = Tree.on(props.clientSession, "treeChanged", () => {
+		const unsubscribe = Tree.on(clientSession, "treeChanged", () => {
 			setInvalidations(invalidations + Math.random());
 		});
 		return unsubscribe;
-	}, []);
+	}, [invalidations, clientSession]);
 
 	useEffect(() => {
 		test();
-	}, [invalidations]);
+	}, [invalidations, test]);
 
 	useEffect(() => {
 		test();
-	}, [props.fluidMembers]);
+	}, [fluidMembers, test]);
 
 	useEffect(() => {
 		mounted.current = true;
@@ -108,7 +102,7 @@ export function SessionView(props: {
 		return () => {
 			mounted.current = false;
 		};
-	}, []);
+	}, [test]);
 
 	useEffect(() => {
 		if (selected) {
@@ -120,20 +114,21 @@ export function SessionView(props: {
 
 	toggle(false);
 
+	const parent = Tree.parent(session);
 	useEffect(() => {
 		toggle(true);
-	}, [Tree.parent(props.session)]);
+	}, [parent]);
 
 	useEffect(() => {
 		if (mounted.current) {
 			toggle(true);
 		}
-	}, [props.session.title, props.session.abstract]);
+	}, [session.title, session.abstract]);
 
 	const [{ isDragging }, drag] = useDrag(
 		() => ({
 			type: dragType.SESSION,
-			item: props.session,
+			item: session,
 			collect: (monitor) => ({
 				isDragging: monitor.isDragging(),
 			}),
@@ -149,13 +144,13 @@ export function SessionView(props: {
 				canDrop: !!monitor.canDrop(),
 			}),
 			canDrop: (item) => {
-				if (Tree.is(item, Session) && item !== props.session) return true;
+				if (Tree.is(item, Session) && item !== session) return true;
 				return false;
 			},
 			drop: (item) => {
 				const droppedItem = item;
 				if (Tree.is(droppedItem, Session) && Tree.is(parent, Sessions)) {
-					moveItem(droppedItem, parent.indexOf(props.session), parent);
+					moveItem(droppedItem, parent.indexOf(session), parent);
 				}
 				return;
 			},
@@ -179,6 +174,10 @@ export function SessionView(props: {
 		}
 	};
 
+	if (!Tree.is(parent, Sessions)) return <></>;
+	const grandParent = Tree.parent(parent);
+	if (Tree.is(grandParent, Conference)) unscheduled = true;
+
 	let borderPostion = "";
 	let hoverMovement = "";
 	unscheduled
@@ -189,7 +188,7 @@ export function SessionView(props: {
 		<div
 			onClick={(e) => handleClick(e)}
 			onDoubleClick={(e) => {
-				e.stopPropagation(), props.setIsDetailsShowing(true);
+				e.stopPropagation(), setIsDetailsShowing(true);
 			}}
 			className={`transition duration-500${
 				status === "exiting" ? " transform ease-out scale-110" : ""
@@ -213,12 +212,9 @@ export function SessionView(props: {
 						(isOver && canDrop ? hoverMovement : "")
 					}
 				>
-					<SessionToolbar
-						session={props.session}
-						setIsDetailsShowing={props.setIsDetailsShowing}
-					/>
-					<SessionTitle session={props.session} update={update} />
-					<SessionTypeLabel session={props.session} />
+					<SessionToolbar session={session} setIsDetailsShowing={setIsDetailsShowing} />
+					<SessionTitle session={session} update={update} />
+					<SessionTypeLabel session={session} />
 					<RemoteSelection show={remoteSelected} />
 				</div>
 			</div>
@@ -367,16 +363,17 @@ const sessionTypes = [
 ];
 
 function TypeList(props: { session: Session }): JSX.Element {
+	const { session } = props;
 	const [selectedSessionType, setSelectedSessionType] = useState(
-		sessionTypes[sessionTypes.findIndex((x) => x.value === props.session.sessionType)],
+		sessionTypes[sessionTypes.findIndex((x) => x.value === session.sessionType)],
 	);
 
 	// Set the session type to the selected value
 	useEffect(() => {
-		props.session.updateSessionType(
+		session.updateSessionType(
 			selectedSessionType.value as "session" | "keynote" | "panel" | "workshop",
 		);
-	}, [selectedSessionType]);
+	}, [selectedSessionType, session]);
 
 	return (
 		<Listbox value={selectedSessionType} onChange={setSelectedSessionType}>
