@@ -25,8 +25,8 @@ export class Session extends sf.object("Session", {
 				"This is one of four possible strings: 'Session', 'Workshop', 'Panel', or 'Keynote'",
 		},
 	}),
-	created: sf.required(sf.number), // { metadata: { llmDefault: () => Date.now() } }),
-	lastChanged: sf.required(sf.number), // { metadata: { llmDefault: () => Date.now() } }),
+	created: sf.required(sf.number, { metadata: { llmDefault: () => Date.now() } }),
+	lastChanged: sf.required(sf.number, { metadata: { llmDefault: () => Date.now() } }),
 }) {
 	// Update the title text and also update the timestamp
 	public updateTitle(text: string) {
