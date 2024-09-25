@@ -1,89 +1,114 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Conference } from "../schema/app_schema.js";
 import { TreeView, TreeViewConfiguration } from "fluid-framework";
+import { getBranch } from "fluid-framework/alpha";
 import { PrompterResult } from "../utils/gpt_helpers.js";
-import { getBranch, TreeBranch, TreeBranchFork } from "fluid-framework/alpha";
-import { ExtendedTreeView } from "../utils/utils.js";
+import { MainBranch, TempBranch, ViewBranch } from "../utils/utils.js";
+
+enum PromptState {
+	Idle,
+	Prompting,
+	Reviewing,
+}
 
 export function HeaderPrompt(props: {
 	applyAgentEdits: (
 		prompt: string,
-		treeView: ExtendedTreeView<typeof Conference>,
+		treeView: TreeView<typeof Conference>,
 		abortController: AbortController,
 	) => Promise<PrompterResult>;
-	treeViewBase: TreeView<typeof Conference>;
+	treeViewBase: MainBranch<typeof Conference>;
 	abortController: AbortController;
-	setCurrentView: (arg: ExtendedTreeView<typeof Conference>) => void;
-	currentView: ExtendedTreeView<typeof Conference>;
+	setCurrentView: (arg: ViewBranch<typeof Conference>) => void;
+	currentView: ViewBranch<typeof Conference>;
 }): JSX.Element {
 	const placeholderType = "Type here to talk to a robot...";
 	const placeholderTalk = "Talking to a robot...";
 
-	const [isPrompting, setIsPrompting] = useState(false);
+	const [promptState, setPromptState] = useState<PromptState>(PromptState.Idle);
+	const isPrompting = promptState === PromptState.Prompting;
+
 	const [promptText, setPromptText] = useState("");
-	const [branch, setBranch] = useState<TreeBranchFork>();
 
-	const handlePromptClick = () => {
-		if (isPrompting) {
-			props.setCurrentView(props.treeViewBase as ExtendedTreeView<typeof Conference>);
-			props.abortController.abort("User cancelled");
-			setIsPrompting(false);
-			setPromptText("");
+	const handleSubmitPrompt = () => {
+		const prompt = promptText;
+		setPromptState(PromptState.Prompting);
+		setPromptText("");
+
+		// If we're already on an unmerged temp branch, keep using it.
+		// Otherwise, create a new temp branch and set it as the current view.
+		let branch: TempBranch<typeof Conference>;
+		if (props.currentView.name === "temp") {
+			branch = props.currentView;
 		} else {
-			const prompt = promptText;
-			setIsPrompting(true);
-			setPromptText("");
-
-			const b = getBranch(props.treeViewBase).branch();
-			setBranch(b);
-
-			let branchView: ExtendedTreeView<typeof Conference>;
-			if (props.currentView.isBranch) {
-				branchView = props.currentView;
-			} else {
-				branchView = b.viewWith(
-					new TreeViewConfiguration({ schema: Conference }),
-				) as ExtendedTreeView<typeof Conference>;
-				branchView.isBranch = true;
-			}
-
-			props.setCurrentView(branchView);
-			props
-				.applyAgentEdits(prompt, branchView, props.abortController)
-				.then((result: PrompterResult) => {
-					switch (result) {
-						case "success":
-							console.log("Prompt successful");
-							break;
-						case "tooManyErrors":
-							console.error("Too many errors");
-							break;
-						case "tooManyModelCalls":
-							console.error("Too many model calls");
-							break;
-						case "aborted":
-							console.error("Aborted");
-							break;
-					}
-					setIsPrompting(false);
-				});
+			const tempBranch = getBranch(props.treeViewBase.view).branch();
+			const tempBranchView = tempBranch.viewWith(
+				new TreeViewConfiguration({ schema: Conference }),
+			);
+			branch = {
+				branch: tempBranch,
+				view: tempBranchView,
+				name: "temp",
+			};
 		}
+
+		// Kick off the prompt, asynchronously applying the edits to the temp branch
+		props
+			.applyAgentEdits(prompt, branch.view, props.abortController)
+			.then((result: PrompterResult) => {
+				switch (result) {
+					case "success":
+						console.log("Prompt successful");
+						break;
+					case "tooManyErrors":
+						console.error("Too many errors");
+						break;
+					case "tooManyModelCalls":
+						console.error("Too many model calls");
+						break;
+					case "aborted":
+						console.error("Aborted");
+						break;
+				}
+				// TODO: this should probably cancel out of and return to `Idle` when an error is encountered.
+				setPromptState(PromptState.Reviewing);
+			});
+
+		// Set the temp branch as the current view
+		props.setCurrentView(branch);
+	};
+
+	const handleCancelClick = () => {
+		props.abortController.abort("User cancelled");
+		setPromptState(PromptState.Idle);
+		setPromptText("");
+
+		// Set the current view back to the main branch
+		props.setCurrentView(props.treeViewBase);
 	};
 
 	const handleRevertClick = () => {
-		props.setCurrentView(props.treeViewBase as ExtendedTreeView<typeof Conference>);
+		setPromptState(PromptState.Idle);
+		props.setCurrentView(props.treeViewBase);
 	};
 
 	const handleKeepClick = () => {
-		props.setCurrentView(props.treeViewBase as ExtendedTreeView<typeof Conference>);
-		getBranch(props.treeViewBase).merge(branch!, true);
+		if (props.currentView.name === "temp") {
+			getBranch(props.treeViewBase.view).merge(props.currentView.branch, true);
+		}
+		setPromptState(PromptState.Idle);
+		props.setCurrentView(props.treeViewBase);
 	};
 
 	// capture the return key to insert the template
 	// when the input field is focused
 	document.onkeydown = (e) => {
-		if (e.key === "Enter" && document.activeElement?.id === "insertPrompt") {
-			handlePromptClick();
+		if (
+			e.key === "Enter" &&
+			document.activeElement?.id === "insertPrompt" &&
+			promptState !== PromptState.Prompting
+		) {
+			handleSubmitPrompt();
 		}
 	};
 
@@ -104,16 +129,18 @@ export function HeaderPrompt(props: {
 					}}
 				/>
 			</div>
-			<div className="flex h-fit w-fit">
+			<div className={`flex h-fit w-fit ${isPrompting ? "hidden" : ""}`}>
 				<HeaderPromptButton
-					isPrompting={isPrompting}
-					isDisabled={promptText === "" && !isPrompting}
-					onClick={handlePromptClick}
+					isDisabled={promptText === "" || isPrompting}
+					onClick={handleSubmitPrompt}
 				/>
+			</div>
+			<div className={`flex h-fit w-fit ${isPrompting ? "" : "hidden"}`}>
+				<HeaderCancelButton onClick={handleCancelClick} />
 			</div>
 			<div
 				className={`flex h-fit w-fit ${
-					props.currentView.isBranch && !isPrompting ? "" : "hidden"
+					promptState === PromptState.Reviewing ? "" : "hidden"
 				}`}
 			>
 				<HeaderCommitButtons
@@ -127,11 +154,25 @@ export function HeaderPrompt(props: {
 
 // React component that renders the button to talk to the robot
 export function HeaderPromptButton(props: {
-	isPrompting: boolean;
 	isDisabled: boolean;
 	onClick: () => void;
 }): JSX.Element {
 	const buttonTalkColor = "bg-gray-500";
+
+	return (
+		<HeaderButton
+			onClick={() => {
+				props.onClick();
+			}}
+			color={buttonTalkColor}
+			isDisabled={props.isDisabled}
+			text={"Talk"}
+		/>
+	);
+}
+
+// React component that renders the button to cancel talking to the robot
+export function HeaderCancelButton(props: { onClick: () => void }): JSX.Element {
 	const buttonCancelColor = "bg-red-500";
 
 	return (
@@ -139,9 +180,8 @@ export function HeaderPromptButton(props: {
 			onClick={() => {
 				props.onClick();
 			}}
-			color={props.isPrompting ? buttonCancelColor : buttonTalkColor}
-			isDisabled={props.isDisabled}
-			text={props.isPrompting ? "Cancel" : "Talk"}
+			color={buttonCancelColor}
+			text={"Cancel"}
 		/>
 	);
 }

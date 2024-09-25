@@ -27,10 +27,13 @@ import {
 } from "./button_ux.js";
 import { undoRedo } from "../utils/undo.js";
 import { SessionsView } from "./sessions_ux.js";
-import { ExtendedTreeView } from "../utils/utils.js";
 
 export function Canvas(props: {
-	conferenceTree: ExtendedTreeView<typeof Conference>;
+	conferenceTree: TreeView<typeof Conference>;
+	/**
+	 * Whether or not the canvas is showing the temp branch, or the main branch.
+	 */
+	showingBranch: boolean;
 	sessionTree: TreeView<typeof ClientSession>;
 	audience: IServiceAudience<IMember>;
 	container: IFluidContainer;
@@ -45,6 +48,7 @@ export function Canvas(props: {
 	const {
 		audience,
 		conferenceTree,
+		showingBranch,
 		container,
 		currentUser,
 		fluidMembers,
@@ -114,7 +118,7 @@ export function Canvas(props: {
 
 	const clientId = currentUser?.id ?? "";
 	let borderStyle = "border-2 border-gray-200";
-	if (conferenceTree.isBranch) {
+	if (showingBranch) {
 		console.log("isBranch");
 		borderStyle = "border-dashed border-8 border-red-500 rounded-lg";
 	} else {

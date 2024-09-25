@@ -4,6 +4,7 @@
  */
 
 import { ImplicitFieldSchema, TreeView } from "fluid-framework";
+import { TreeBranch, TreeBranchFork } from "fluid-framework/alpha";
 
 export const undefinedUserId = "[UNDEFINED]";
 
@@ -17,6 +18,15 @@ export enum selectAction {
 	SINGLE,
 }
 
-export interface ExtendedTreeView<T extends ImplicitFieldSchema> extends TreeView<T> {
-	isBranch: boolean;
+export interface MainBranch<T extends ImplicitFieldSchema> {
+	name: "main";
+	view: TreeView<T>;
 }
+
+export interface TempBranch<T extends ImplicitFieldSchema> {
+	name: "temp";
+	view: TreeView<T>;
+	branch: TreeBranchFork;
+}
+
+export type ViewBranch<T extends ImplicitFieldSchema> = MainBranch<T> | TempBranch<T>;

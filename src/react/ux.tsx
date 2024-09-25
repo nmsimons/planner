@@ -13,7 +13,7 @@ import { Canvas } from "./canvas_ux.js";
 import { undoRedo } from "../utils/undo.js";
 import { Header } from "./header_ux.js";
 import { PrompterResult } from "../utils/gpt_helpers.js";
-import { ExtendedTreeView } from "../utils/utils.js";
+import { MainBranch, ViewBranch } from "../utils/utils.js";
 
 export function ReactApp(props: {
 	conferenceTree: TreeView<typeof Conference>;
@@ -32,9 +32,12 @@ export function ReactApp(props: {
 	const [connectionState, setConnectionState] = useState("");
 	const [saved, setSaved] = useState(false);
 	const [fluidMembers, setFluidMembers] = useState<IMember[]>([]);
-	const [currentView, setCurrentView] = useState(
-		props.conferenceTree as ExtendedTreeView<typeof Conference>,
-	);
+
+	const treeViewBase: MainBranch<typeof Conference> = {
+		name: "main",
+		view: props.conferenceTree,
+	};
+	const [currentView, setCurrentView] = useState<ViewBranch<typeof Conference>>(treeViewBase);
 
 	/** Unsubscribe to undo-redo events when the component unmounts */
 	useEffect(() => {
@@ -71,14 +74,15 @@ export function ReactApp(props: {
 					fluidMembers={fluidMembers}
 					currentUser={currentUser}
 					applyAgentEdits={props.applyAgentEdits}
-					treeViewBase={props.conferenceTree}
+					treeViewBase={treeViewBase}
 					abortController={props.abortController}
 					setCurrentView={setCurrentView}
 					currentView={currentView}
 				/>
 				<div className="flex h-[calc(100vh-48px)] flex-row ">
 					<Canvas
-						conferenceTree={currentView}
+						conferenceTree={currentView.view}
+						showingBranch={currentView.name === "temp"}
 						sessionTree={props.sessionTree}
 						audience={props.audience}
 						container={props.container}

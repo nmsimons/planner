@@ -4,7 +4,7 @@ import { UserAvatars } from "./avatars_ux.js";
 import { HeaderPrompt } from "./prompt_ux.js";
 import { Conference } from "../schema/app_schema.js";
 import { PrompterResult } from "../utils/gpt_helpers.js";
-import { ExtendedTreeView } from "../utils/utils.js";
+import { MainBranch, ViewBranch } from "../utils/utils.js";
 
 export function Header(props: {
 	saved: boolean;
@@ -16,10 +16,10 @@ export function Header(props: {
 		treeView: TreeView<typeof Conference>,
 		abortController: AbortController,
 	) => Promise<PrompterResult>;
-	treeViewBase: TreeView<typeof Conference>;
+	treeViewBase: MainBranch<typeof Conference>;
 	abortController: AbortController;
-	setCurrentView: (arg: ExtendedTreeView<typeof Conference>) => void;
-	currentView: ExtendedTreeView<typeof Conference>;
+	setCurrentView: (arg: ViewBranch<typeof Conference>) => void;
+	currentView: ViewBranch<typeof Conference>;
 }): JSX.Element {
 	return (
 		<div className="h-[48px] flex shrink-0 flex-row items-center justify-between bg-black text-base text-white z-40 w-full gap-4">
